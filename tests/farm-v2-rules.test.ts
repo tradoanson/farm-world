@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {warehouseCapacity,unlockedPlotCount,isPlotUnlocked,cropUnlockLevel,canPlantCrop,canStore} from '../lib/farm-v2-rules';
+import {warehouseCapacity,unlockedPlotCount,unlockedPlotCountWithBarn,isPlotUnlocked,cropUnlockLevel,canPlantCrop,canStore} from '../lib/farm-v2-rules';
 describe('V2 economy and land rules',()=>{
  it('warehouse grows by upgrade and rejects impossible levels',()=>{
   expect(warehouseCapacity(0)).toBe(40);
@@ -12,6 +12,10 @@ describe('V2 economy and land rules',()=>{
   expect(unlockedPlotCount(999)).toBe(64);
   expect(isPlotUnlocked(16,1)).toBe(false);
   expect(isPlotUnlocked(16,3)).toBe(true);
+  expect(unlockedPlotCountWithBarn(1,1)).toBe(20);
+  expect(unlockedPlotCountWithBarn(1,5)).toBe(36);
+  expect(unlockedPlotCountWithBarn(999,5)).toBe(64);
+  expect(()=>unlockedPlotCountWithBarn(1,6)).toThrow();
  });
  it('crop unlocks cannot be bypassed by client level',()=>{
   expect(cropUnlockLevel(4)).toBe(8);

@@ -54,7 +54,7 @@ grant execute on function public.farm_market_list(integer,integer,integer) to au
 create or replace function public.farm_market_buy(p_listing uuid,p_request uuid)
 returns jsonb language plpgsql security definer set search_path='' as $$
 declare v_user uuid:=auth.uid();v_listing public.farm_market_listings%rowtype;
-v_buyer_farm uuid;v_total bigint;v_coins bigint;v_prior public.farm_market_purchases%rowtype;v_result jsonb;
+v_buyer_farm uuid;v_total bigint;v_coins bigint;v_locked uuid;v_prior public.farm_market_purchases%rowtype;v_result jsonb;
 begin
  if v_user is null or p_listing is null or p_request is null then raise exception 'Invalid purchase';end if;
  -- Serialize retries by buyer before checking idempotency.
@@ -69,6 +69,10 @@ begin
  select id into v_buyer_farm from public.player_farms where owner_id=v_user;
  if v_buyer_farm is null then raise exception 'Farm not found';end if;
  v_total:=v_listing.quantity::bigint*v_listing.price_each::bigint;
+ -- Deterministic row-lock ordering prevents reciprocal purchases deadlocking.
+ for v_locked in select farm_id from public.farm_state
+   where farm_id in (v_buyer_farm,v_listing.seller_farm) order by farm_id for update
+ loop null; end loop;
  -- Atomic balance debit: prevents overspending under concurrent operations.
  update public.farm_state set coins=coins-v_total,revision=revision+1
  where farm_id=v_buyer_farm and coins>=v_total returning coins into v_coins;

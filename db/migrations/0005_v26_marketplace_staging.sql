@@ -44,6 +44,7 @@ begin
  select quantity into v_stock from public.farm_inventory where farm_id=v_farm and crop=p_crop for update;
  if coalesce(v_stock,0)<p_quantity then raise exception 'Insufficient inventory';end if;
  update public.farm_inventory set quantity=quantity-p_quantity where farm_id=v_farm and crop=p_crop;
+ update public.farm_state set revision=revision+1 where farm_id=v_farm;
  insert into public.farm_market_listings(seller_id,seller_farm,crop,quantity,price_each)
  values(v_user,v_farm,p_crop,p_quantity,p_price_each) returning id into v_id;
  return v_id;
@@ -54,7 +55,7 @@ grant execute on function public.farm_market_list(integer,integer,integer) to au
 create or replace function public.farm_market_buy(p_listing uuid,p_request uuid)
 returns jsonb language plpgsql security definer set search_path='' as $$
 declare v_user uuid:=auth.uid();v_listing public.farm_market_listings%rowtype;
-v_buyer_farm uuid;v_total bigint;v_coins bigint;v_locked uuid;v_prior public.farm_market_purchases%rowtype;v_result jsonb;
+v_buyer_farm uuid;v_total bigint;v_coins bigint;v_locked uuid;v_warehouse_level integer;v_stock_total bigint;v_prior public.farm_market_purchases%rowtype;v_result jsonb;
 begin
  if v_user is null or p_listing is null or p_request is null then raise exception 'Invalid purchase';end if;
  -- Serialize retries by buyer before checking idempotency.
@@ -73,6 +74,10 @@ begin
  for v_locked in select farm_id from public.farm_state
    where farm_id in (v_buyer_farm,v_listing.seller_farm) order by farm_id for update
  loop null; end loop;
+ -- Warehouse check is authoritative; marketplace purchases cannot bypass storage limits.
+ select coalesce(warehouse_level,0) into v_warehouse_level from public.farm_upgrades where farm_id=v_buyer_farm;
+ select coalesce(sum(quantity),0) into v_stock_total from public.farm_inventory where farm_id=v_buyer_farm;
+ if v_stock_total+v_listing.quantity>40+20*coalesce(v_warehouse_level,0) then raise exception 'Buyer warehouse full';end if;
  -- Atomic balance debit: prevents overspending under concurrent operations.
  update public.farm_state set coins=coins-v_total,revision=revision+1
  where farm_id=v_buyer_farm and coins>=v_total returning coins into v_coins;
@@ -99,6 +104,7 @@ begin
  if not found or v_listing.seller_id<>v_user or v_listing.status<>'open' then raise exception 'Listing unavailable';end if;
  insert into public.farm_inventory(farm_id,crop,quantity) values(v_listing.seller_farm,v_listing.crop,v_listing.quantity)
  on conflict(farm_id,crop) do update set quantity=public.farm_inventory.quantity+excluded.quantity;
+ update public.farm_state set revision=revision+1 where farm_id=v_listing.seller_farm;
  update public.farm_market_listings set status='cancelled',closed_at=now() where id=p_listing;
  return true;
 end $$;

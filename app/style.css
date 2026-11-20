@@ -92,3 +92,19 @@ button{font:inherit}
  .view-switch button{font-size:13px;padding:9px 12px}
 }
 @media(max-width:360px){.farm-scene.scene-iso{padding:10% 5%}.farm-scene.scene-iso .tiles{transform:rotate(45deg) scale(.68)}}
+
+/* V0.3B: camera interaction, lightweight decorative scenery */
+.camera-toolbar{display:flex;align-items:center;justify-content:center;gap:8px;margin:8px 0;flex-wrap:wrap}
+.camera-toolbar button{min-width:44px;min-height:44px;padding:8px 12px;background:#fff;border:1px solid #74a778;border-radius:10px;color:#275c35;cursor:pointer;font-weight:700}
+.camera-toolbar button:disabled{opacity:.45;cursor:not-allowed}
+.camera-toolbar button:focus-visible{outline:3px solid #225f9c}
+.camera-toolbar output{min-width:56px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.camera-hint{text-align:center;font-size:12px;color:#55765b;margin:6px 0 10px}
+.camera-layer{position:relative;transform-origin:center;will-change:transform}
+.scene-iso{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.scene-iso:active{cursor:grabbing}
+.scene-classic .camera-layer{transform:none!important}
+.scene-iso .camera-layer{padding:0;min-width:0}
+.scene-iso .farm-decor{z-index:0}
+.scene-iso .tile{touch-action:none}
+@media(max-width:800px){.camera-hint{font-size:11px}.camera-toolbar{gap:6px}}

@@ -72,3 +72,9 @@ Tên tệp chuẩn: `futurebaseline.md`. Đây là nhật ký kế hoạch **app
 - Không cho browser ghi nông trại, vàng hoặc XP. Không tự động đồng bộ hoặc ghi đè save offline V1/progression V2.
 - Gate bắt buộc: CI/Pages PASS, cấu hình staging an toàn, kiểm thử hai tài khoản cô lập, OTP/redirect/logout, iOS/Android, rồi mới được tuyên bố online ready.
 - V0.8: triển khai server-authoritative actions, idempotency, giao dịch, đồng bộ và rollback trước khi mở quyền ghi.
+
+## Baseline 011 — 2026-11-20 — V0.8 authoritative economy foundation
+- Append-only: server-authoritative plant/harvest RPC, per-owner isolation, idempotency, transaction lock and revision in staging migration.
+- Preserve V1 offline save and V2 progression; no automatic cloud import or production migration.
+- Gates still open: Supabase staging activation, real DB integration, two-account isolation, concurrent requests, CI/Pages, mobile smoke tests.
+- V0.9: online gameplay adapter, authoritative inventory/XP/quests, migration consent, recovery and abuse controls.

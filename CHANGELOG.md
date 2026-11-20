@@ -66,3 +66,9 @@ Lịch sử phiên bản được ghi nối tiếp, không xóa hoặc viết l�
 - API ghi snapshot trả 501 để ngăn chấp nhận vàng/XP từ client.
 - Giữ GitHub Pages offline và save cũ. Chưa có login, host backend, sync hoặc economy server-side.
 - Xem docs/V0.6_BACKEND_HANDOFF.md.
+
+## V0.7 — 2026-11-20 (Supabase opt-in staging)
+- Tích hợp giao diện đăng nhập qua email OTP Supabase khi được cấu hình, đăng xuất, kiểm tra ID nông trại online chỉ đọc.
+- Bổ sung migration Supabase RLS: owner_id unique, chỉ SELECT theo auth.uid(), không có quyền ghi client; chưa chạy migration.
+- GitHub Pages giữ chế độ khách offline khi thiếu cấu hình; không đổi save V1 và progression V2.
+- Chưa triển khai Supabase project, tạo nông trại online, đồng bộ hoặc economy server-side. Xem docs/V0.7_HANDOFF.md.

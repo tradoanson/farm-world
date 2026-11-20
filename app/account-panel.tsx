@@ -116,6 +116,23 @@ export default function AccountPanel() {
         <div className="account-actions"><button type="button" disabled={busy} onClick={() => void createFarm()}>Tạo / mở nông trại online</button><button type="button" disabled={busy} onClick={() => void readFarm()}>Làm mới snapshot</button><button type="button" disabled={busy} onClick={() => void logout()}>Đăng xuất</button></div>
         {pending && <div role="alert"><p>⚠️ Có lệnh chưa xác nhận: {pending.command.action}. Không gửi lệnh khác trước khi đối chiếu.</p><div className="account-actions"><button disabled={busy} onClick={() => void refreshAfterFailure()}>Kiểm tra lại máy chủ</button><button disabled={busy} onClick={() => void sendCommand(pending.command, true)}>Thử lại cùng mã</button><button disabled={busy} onClick={() => { if (window.confirm('Chỉ hủy theo dõi khi đã kiểm tra snapshot. Lệnh có thể đã thành công trên máy chủ.')) setPending(null); }}>Đã đối chiếu, đóng cảnh báo</button></div></div>}
         {snapshot && <div role="status"><small>Mã nông trại: {snapshot.farmId}</small><p>☁️ Máy chủ: {snapshot.coins} vàng · {snapshot.harvested} lượt thu hoạch · {snapshot.xp} XP · Đã bán {snapshot.sold} · Revision {snapshot.revision} · {snapshot.plots.filter(p => p.crop !== null).length}/64 ô đã gieo.</p><p>📦 Kho online: {snapshot.inventory.join(" / ")} · Nhiệm vụ đã nhận: {snapshot.claimed.length}/3.</p><small>Đây là snapshot online độc lập, không ghi đè dữ liệu offline.</small></div>}
+        {snapshot && <section aria-label="Nông trại online" style={{marginTop:12}}>
+          <strong>☁️ Chơi online trên Supabase (thử nghiệm)</strong>
+          <p>64 ô đất riêng trên máy chủ. Dữ liệu offline bên dưới không bị thay đổi.</p>
+          <label>Chọn hạt: <select value={selectedCrop} onChange={e=>setSelectedCrop(Number(e.target.value))}>{crops.map((name,i)=><option key={name} value={i}>{name} · {prices[i]} vàng</option>)}</select></label>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(8,minmax(0,1fr))',gap:4,marginTop:8}}>
+            {Array.from({length:64},(_,index)=>{
+              const plot=snapshot.plots.find(p=>p.index===index);
+              const crop=plot?.crop??null;
+              const ready=crop!==null&&!!plot?.plantedAt&&clock-Date.parse(plot.plantedAt)>=durations[crop]*1000;
+              return <button key={index} type="button" disabled={busy||!!pending||(crop!==null&&!ready)} title={crop===null?'Gieo hạt':ready?'Thu hoạch':'Đang lớn'} onClick={()=>void sendCommand(crop===null?{action:'plant',index,crop:selectedCrop}:{action:'harvest',index})} style={{minHeight:34,padding:2}}>{crop===null?'·':ready?'🌾':'🌱'}</button>;
+            })}
+          </div>
+          <p>📦 Bán nông sản:</p>
+          <div className="account-actions">{crops.map((name,i)=><button key={name} disabled={busy||!!pending||snapshot.inventory[i]===0} onClick={()=>void sendCommand({action:'sell',crop:i,quantity:snapshot.inventory[i]})}>{name}: {snapshot.inventory[i]} · Bán hết</button>)}</div>
+          <p>📋 Nhiệm vụ:</p>
+          <div className="account-actions">{[0,1,2].map(i=><button key={i} disabled={busy||!!pending||snapshot.claimed.includes(i)||(i===0?snapshot.harvested<5:i===1?snapshot.sold<10:Math.floor(Math.sqrt(snapshot.xp/25))+1<3)} onClick={()=>void sendCommand({action:'claim',quest:i})}>Nhiệm vụ {i+1}{snapshot.claimed.includes(i)?' ✓':''}</button>)}</div>
+        </section>}
       </div> :
       <div><strong>👤 Khách offline</strong> · Đăng nhập online bằng email (thử nghiệm)
         <div className="account-actions"><input type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email của bạn" aria-label="Email đăng nhập" /><button type="button" disabled={busy || !email.trim()} onClick={() => void sendLink()}>Gửi liên kết đăng nhập</button></div>

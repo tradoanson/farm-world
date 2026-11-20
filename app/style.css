@@ -142,3 +142,10 @@ button{font:inherit}
 /* V0.5 transparent offline account state */
 .account-status{display:block;padding:10px 12px;border:1px solid #9dbca1;border-radius:12px;background:#f0f9ed;font-size:13px;font-weight:650;color:#28583a}
 .account-status a{color:#1c6038;text-decoration:underline;text-underline-offset:2px}
+
+/* V0.7 account */
+.account-actions{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.account-actions input{min-width:160px;flex:1;min-height:44px;border:1px solid #7caa84;border-radius:8px;padding:8px}
+.account-actions button{min-height:44px;border:1px solid #458357;border-radius:8px;background:#e3f4e3;color:#174d29;padding:8px;cursor:pointer}
+.account-actions button:disabled{opacity:.5;cursor:not-allowed}
+.account-actions button:focus-visible,.account-actions input:focus-visible{outline:3px solid #245d9a}

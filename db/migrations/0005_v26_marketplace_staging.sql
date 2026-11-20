@@ -58,7 +58,7 @@ begin
  values(v_user,v_farm,p_crop,p_quantity,p_price_each) returning id into v_id;
  insert into public.farm_market_mutations(actor_id,request_id,kind,payload,result) values(v_user,p_request,'list',v_payload,jsonb_build_object('listing_id',v_id));
  return v_id;
-end $;
+end $$;
 revoke all on function public.farm_market_list(integer,integer,integer,uuid) from public,anon;
 grant execute on function public.farm_market_list(integer,integer,integer,uuid) to authenticated;
 

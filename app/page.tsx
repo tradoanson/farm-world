@@ -1,176 +1,73 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
-import AccountPanel from './account-panel';
-import { PROGRESSION_KEY, QUESTS, claimQuest, earnHarvest, freshProgression, levelOf, migrateProgression, nextLevelXp, questProgress, sellCrop, type Progression } from '../lib/farm-progression';
-import { clampZoom, hasDragged, pinchZoom } from '../lib/farm-camera';
-import { CROPS, SAVE_KEY, freshFarm, harvest, harvestAll, isValidFarm, plant, plantAvailable, remainingSeconds, timeLabel, type FarmSave } from '../lib/farm-demo';
+import {useEffect,useRef,useState} from 'react';
+import {createClient,type SupabaseClient,type User} from '@supabase/supabase-js';
+import {CROPS,timeLabel} from '../lib/farm-demo';
+import {applyOnlineCommand,createOnlineFarm,readOnlineSnapshot,type OnlineCommand,type OnlineSnapshot} from '../lib/farm-online';
+import {clampZoom,hasDragged,pinchZoom} from '../lib/farm-camera';
 
-export default function Home() {
-  const [farm, setFarm] = useState<FarmSave>(freshFarm);
-  const [progress, setProgress] = useState<Progression>(freshProgression);
-  const [loaded, setLoaded] = useState(false);
-  const [selected, setSelected] = useState(0);
-  const [view, setView] = useState<'isometric' | 'classic'>('isometric');
-  const [now, setNow] = useState(0);
-  const [notice, setNotice] = useState('Chọn hạt giống và gieo trên ô đất trống.');
-  const fileInput = useRef<HTMLInputElement>(null);
-  const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const gesture = useRef<{ x: number; y: number; originX: number; originY: number; moved: boolean } | null>(null);
-  const pointers = useRef(new Map<number, { x: number; y: number }>());
-  const pinch = useRef<{ distance: number; zoom: number } | null>(null);
-  const suppressClick = useRef(false);
-  const lastGesture = useRef(false);
-  function resetCamera() { setZoom(1); setPan({ x: 0, y: 0 }); }
-  function pointerDown(event: React.PointerEvent<HTMLDivElement>) {
-    if (view !== 'isometric') return;
-    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
-    if (event.pointerType === 'mouse' && event.button !== 0) return;
-    event.currentTarget.setPointerCapture(event.pointerId);
-    if (pointers.current.size === 1) {
-      suppressClick.current = false;
-      lastGesture.current = false;
-      gesture.current = { x: event.clientX, y: event.clientY, originX: pan.x, originY: pan.y, moved: false };
-      pinch.current = null;
-    } else if (pointers.current.size === 2) {
-      const [a, b] = [...pointers.current.values()];
-      pinch.current = { distance: Math.hypot(a.x - b.x, a.y - b.y), zoom };
-      gesture.current = null;
-      suppressClick.current = true;
-      lastGesture.current = true;
-    }
-  }
-  function pointerMove(event: React.PointerEvent<HTMLDivElement>) {
-    if (!pointers.current.has(event.pointerId) || view !== 'isometric') return;
-    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
-    if (pointers.current.size === 2 && pinch.current) {
-      const [a, b] = [...pointers.current.values()];
-      const distance = Math.hypot(a.x - b.x, a.y - b.y);
-      setZoom(pinchZoom(pinch.current.zoom, pinch.current.distance, distance));
-      suppressClick.current = true;
-      lastGesture.current = true;
-    } else if (gesture.current && pointers.current.size === 1) {
-      const dx = event.clientX - gesture.current.x;
-      const dy = event.clientY - gesture.current.y;
-      if (hasDragged(dx, dy)) gesture.current.moved = true;
-      if (gesture.current.moved) {
-        suppressClick.current = true;
-        lastGesture.current = true;
-        setPan({ x: gesture.current.originX + dx, y: gesture.current.originY + dy });
-      }
-    }
-  }
-  function pointerUp(event: React.PointerEvent<HTMLDivElement>) {
-    pointers.current.delete(event.pointerId);
-    if (gesture.current?.moved || pinch.current) {
-      suppressClick.current = true;
-      lastGesture.current = true;
-    }
-    gesture.current = null;
-    pinch.current = null;
-  }
-  function cancelTileClick(event: React.MouseEvent<HTMLDivElement>) {
-    if (!suppressClick.current && !lastGesture.current) return;
-    event.preventDefault();
-    event.stopPropagation();
-    suppressClick.current = false;
-    lastGesture.current = false;
-  }
-  function wheelZoom(event: React.WheelEvent<HTMLDivElement>) {
-    if (view !== 'isometric' || !event.ctrlKey) return;
-    event.preventDefault();
-    setZoom(value => clampZoom(value + (event.deltaY < 0 ? 0.1 : -0.1)));
-  }
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(SAVE_KEY);
-      if (saved) {
-        const data: unknown = JSON.parse(saved);
-        if (isValidFarm(data)) { setFarm(data); setProgress(migrateProgression(data, JSON.parse(localStorage.getItem(PROGRESSION_KEY) || 'null'))); }
-        else setNotice('Dữ liệu cũ không hợp lệ; bắt đầu nông trại mới.');
-      }
-    } catch { setNotice('Không thể đọc dữ liệu đã lưu.'); }
-    setLoaded(true);
-    setNow(Date.now());
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(timer);
-  }, []);
-  useEffect(() => {
-    if (!loaded) return;
-    try { localStorage.setItem(SAVE_KEY, JSON.stringify(farm)); localStorage.setItem(PROGRESSION_KEY, JSON.stringify(progress)); }
-    catch { setNotice('Trình duyệt không cho phép lưu. Hãy xuất bản sao dữ liệu.'); }
-  }, [farm, progress, loaded]);
-  const ready = farm.tiles.filter(tile => tile && remainingSeconds(tile, now) === 0).length;
-  const growing = farm.tiles.filter(tile => tile && remainingSeconds(tile, now) > 0).length;
-  const empty = farm.tiles.length - ready - growing;
-  function clickTile(index: number) {
-    if (!loaded) return;
-    if (suppressClick.current || lastGesture.current) { suppressClick.current = false; lastGesture.current = false; return; }
-    const tile = farm.tiles[index];
-    const time = Date.now();
-    if (!tile) {
-      const next = plant(farm, index, selected, time);
-      if (next === farm) { setNotice('Không đủ vàng để gieo hạt giống này.'); return; }
-      setFarm(next);
-      setNotice(`Đã gieo ${CROPS[selected].name}.`);
-    } else if (remainingSeconds(tile, time) === 0) {
-      const next = harvest(farm, index, time);
-      setFarm({ ...next, coins: farm.coins });
-      setProgress(p => earnHarvest(p, tile.crop));
-      setNotice(`Đã đưa ${CROPS[tile.crop].name} vào kho. Bán nông sản để nhận vàng.`);
-    } else setNotice(`${CROPS[tile.crop].name} còn ${timeLabel(remainingSeconds(tile, time))}.`);
-  }
-  function harvestReady() {
-    if (!ready) return;
-    const next = harvestAll(farm, Date.now());
-    setNotice(`Đã thu hoạch ${next.harvested - farm.harvested} ô.`);
-    const collected = farm.tiles.filter((tile) => tile && remainingSeconds(tile, Date.now()) === 0) as NonNullable<FarmSave['tiles'][number]>[];
-    setProgress(p => collected.reduce((current, tile) => earnHarvest(current, tile.crop), p));
-    setFarm({ ...next, coins: farm.coins });
-  }
-  function plantEmpty() {
-    const next = plantAvailable(farm, selected, Date.now());
-    setNotice(next === farm ? 'Không có ô trống hoặc không đủ vàng.' : `Đã gieo ${CROPS[selected].name} trên ${next.tiles.filter(Boolean).length - farm.tiles.filter(Boolean).length} ô.`);
-    setFarm(next);
-  }
-  function sell(index: number) { const result = sellCrop(farm, progress, index, progress.inventory[index]); if (result.progress === progress) return; setFarm(result.farm); setProgress(result.progress); setNotice(`Đã bán ${CROPS[index].name}, nhận vàng.`); }
-  function claim(index: number) { const result = claimQuest(farm, progress, index); if (result.progress === progress) return; setFarm(result.farm); setProgress(result.progress); setNotice('Đã nhận thưởng nhiệm vụ.'); }
-  function exportSave() {
-    const blob = new Blob([JSON.stringify({ version: 2, farm, progression: progress }, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = 'farm-world-backup.json';
-    anchor.click();
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-    setNotice('Đã xuất bản sao dữ liệu nông trại.');
-  }
-  async function importSave(file?: File) {
-    if (!file) return;
-    try {
-      if (file.size > 100_000) throw new Error('File quá lớn.');
-      const parsed: unknown = JSON.parse(await file.text());
-      const backup = parsed as { version?: number; farm?: unknown; progression?: unknown };
-      const restored = isValidFarm(parsed) ? parsed : backup?.version === 2 ? backup.farm : null;
-      if (!isValidFarm(restored)) throw new Error('Dữ liệu không đúng định dạng Farm World.');
-      if (!window.confirm('Nhập dữ liệu này sẽ ghi đè nông trại hiện tại. Tiếp tục?')) return;
-      setFarm(restored);
-      setProgress(migrateProgression(restored, backup?.version === 2 ? backup.progression : undefined));
-      setNotice('Đã khôi phục nông trại từ file.');
-    } catch (error) { setNotice(error instanceof Error ? error.message : 'Không thể nhập file.'); }
-    finally { if (fileInput.current) fileInput.current.value = ''; }
-  }
-  function reset() {
-    if (!window.confirm('Xóa toàn bộ tiến độ nông trại trên trình duyệt này?')) return;
-    setFarm(freshFarm());
-    setProgress(freshProgression());
-    setNotice('Đã tạo nông trại mới.');
-  }
-  return <main>
-    <header><div><span className="brand">🌻 FARM WORLD</span><small>V0.9 • Isometric demo</small></div><div className="wallet">🪙 {farm.coins} vàng <span>⭐ Cấp {levelOf(progress.xp)} · {progress.xp} XP</span></div></header>
-    <section className="hero"><AccountPanel /><h1>Nông trại của bạn 🌿</h1><p>Gieo trồng, chờ cây lớn, thu hoạch và phát triển nông trại.</p><p className="warning">Tự lưu trên trình duyệt này; có thể xuất/nhập file để chuyển thiết bị. Đang chơi ở chế độ Khách offline. V0.9 hỗ trợ xem snapshot online riêng biệt khi đã cấu hình Supabase; chưa đồng bộ gameplay hoặc chống gian lận thời gian.</p></section>
-    <div className="layout"><aside><h2>🌱 Cửa hàng hạt giống</h2><div className="seed-strip">{CROPS.map((crop, index) => <button key={crop.name} className={'seed ' + (selected === index ? 'active' : '')} aria-pressed={selected === index} onClick={() => setSelected(index)}><span>{crop.emoji} {crop.name}</span><small>{crop.cost} 🪙 · {crop.seconds / 60} phút</small></button>)}</div><p className="hint">Thu hoạch đưa nông sản vào kho; bán nhận 3 lần giá hạt giống. Cây tiếp tục lớn khi đóng trang theo đồng hồ thiết bị.</p><h2 className="tools-title">📦 Kho nông sản</h2><p className="hint">Cấp {levelOf(progress.xp)} · {progress.xp}/{nextLevelXp(levelOf(progress.xp))} XP đến cấp tiếp theo</p><div className="inventory">{CROPS.map((crop, index) => <div className="inventory-item" key={crop.name}><span>{crop.emoji} {crop.name}: <strong>{progress.inventory[index]}</strong></span><button type="button" disabled={!loaded || !progress.inventory[index]} onClick={() => sell(index)}>Bán tất cả · {crop.cost * 3} 🪙/sp</button></div>)}</div><h2>📋 Nhiệm vụ</h2><div className="quests">{QUESTS.map((quest, index) => <div className="quest" key={quest.title}><span>{quest.title} ({Math.min(quest.target, questProgress(farm, progress, index))}/{quest.target}) · +{quest.reward} 🪙</span><button type="button" disabled={!loaded || progress.claimed.includes(index) || questProgress(farm, progress, index) < quest.target} onClick={() => claim(index)}>{progress.claimed.includes(index) ? 'Đã nhận' : 'Nhận'}</button></div>)}</div><h2 className="tools-title">🧰 Công cụ</h2><button className="refresh" disabled={!loaded || !empty} onClick={plantEmpty}>🌱 Gieo trên các ô trống</button><button className="refresh" disabled={!loaded || !ready} onClick={harvestReady}>🧺 Thu hoạch tất cả ({ready})</button><button className="secondary-action" disabled={!loaded} onClick={exportSave}>⬇ Xuất dữ liệu (.json)</button><button className="secondary-action" disabled={!loaded} onClick={() => fileInput.current?.click()}>⬆ Nhập dữ liệu</button><input ref={fileInput} className="hidden-input" type="file" accept=".json,application/json" aria-label="Chọn bản sao Farm World" onChange={event => { void importSave(event.target.files?.[0]); }} /><button className="reset" disabled={!loaded} onClick={reset}>Xóa tiến độ / chơi lại</button></aside>
-    <section className="farm" id="farm-board"><div className="farm-title">🏡 Khu đất khởi đầu <span>8 × 8</span></div><p className="stats">🟫 Trống: {empty} &nbsp; 🌱 Đang lớn: {growing} &nbsp; 🌟 Đã chín: {ready}</p><p className="status" role="status">{notice}</p><div className="view-switch" role="group" aria-label="Chế độ hiển thị"><button type="button" className={view === "isometric" ? "active" : ""} aria-pressed={view === "isometric"} onClick={() => { setView("isometric"); resetCamera(); }}>◇ Isometric</button><button type="button" className={view === "classic" ? "active" : ""} aria-pressed={view === "classic"} onClick={() => { setView("classic"); resetCamera(); }}>▦ Cổ điển</button></div><div className="camera-toolbar" role="group" aria-label="Điều khiển bản đồ"><button type="button" disabled={view !== 'isometric'} onClick={() => setZoom(value => clampZoom(value - .15))} aria-label="Thu nhỏ">−</button><output aria-label="Mức phóng đại">{Math.round(zoom * 100)}%</output><button type="button" disabled={view !== 'isometric'} onClick={() => setZoom(value => clampZoom(value + .15))} aria-label="Phóng to">+</button><button type="button" disabled={view !== 'isometric'} onClick={resetCamera}>⌂ Đặt lại</button></div><p className="camera-hint">Kéo bằng một ngón tay hoặc chuột để di chuyển; chụm hai ngón để zoom. Trên máy tính dùng Ctrl + cuộn.</p><div className={"farm-scene " + (view === "isometric" ? "scene-iso" : "scene-classic")} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerUp} onClickCapture={cancelTileClick} onWheel={wheelZoom}><div className="camera-layer" style={view === 'isometric' ? { transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` } : undefined}><div className="farm-decor" aria-hidden="true"><span>🏠</span><span>🌳</span><span>🌻</span></div><div className="tiles">{farm.tiles.map((tile, index) => { const crop = tile ? CROPS[tile.crop] : null; const seconds = tile ? remainingSeconds(tile, now) : 0; const ripe = !!tile && seconds === 0; return <button key={index} disabled={!loaded} onClick={() => clickTile(index)} className={'tile ' + (ripe ? 'ready' : '')} title={!tile ? 'Gieo hạt' : ripe ? 'Thu hoạch' : timeLabel(seconds)} aria-label={`Ô đất ${index + 1}: ${!tile ? 'trống' : ripe ? crop?.name + ' đã chín' : crop?.name + ' còn ' + timeLabel(seconds)}`}><span>{!tile ? '·' : ripe ? crop?.emoji : '🌱'}</span>{tile && !ripe && <small className="countdown">{timeLabel(seconds)}</small>}</button>; })}</div></div></div><div className="footnote">🟫 Đất trống &nbsp; 🌱 Đang lớn &nbsp; 🌟 Có thể thu hoạch</div></section></div>
-    <footer>Farm World V0.9 • GitHub Pages • Dữ liệu demo nằm trên thiết bị của bạn <span className="footer-links"><a href="https://github.com/tradoanson/farm-world/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Lịch sử phiên bản</a><a href="https://github.com/tradoanson/farm-world/blob/main/futurebaseline.md" target="_blank" rel="noopener noreferrer">Kế hoạch tiếp theo</a></span></footer>
-  </main>;
+const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
+const key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const configured=!!url&&!!key&&url.startsWith('https://');
+let shared:SupabaseClient|null=null;
+function api(){return configured?(shared??=createClient(url!,key!,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}})):null;}
+type Pending={command:OnlineCommand;requestId:string};
+const pendingKey=(id:string)=>'farm-world-v1-pending-'+id;
+function restore(id:string):Pending|null{try{const raw=localStorage.getItem(pendingKey(id));if(!raw)return null;const v=JSON.parse(raw) as Pending;if(!v||!v.command||typeof v.requestId!=='string'||!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(v.requestId))return null;return v;}catch{return null;}}
+export default function Home(){
+ const [user,setUser]=useState<User|null>(null);
+ const [email,setEmail]=useState('');
+ const [snapshot,setSnapshot]=useState<OnlineSnapshot|null>(null);
+ const [busy,setBusy]=useState(false);
+ const [notice,setNotice]=useState('Đăng nhập để chơi nông trại online.');
+ const [selected,setSelected]=useState(0);
+ const [now,setNow]=useState(0);
+ const [pending,setPending]=useState<Pending|null>(null);
+ const [view,setView]=useState<'isometric'|'classic'>('isometric');
+ const [zoom,setZoom]=useState(1);
+ const [pan,setPan]=useState({x:0,y:0});
+ const pointer=useRef<{x:number;y:number;panX:number;panY:number;moved:boolean}|null>(null);
+ const fingers=useRef(new Map<number,{x:number;y:number}>());
+ const pinch=useRef<{distance:number;zoom:number}|null>(null);
+ const suppress=useRef(false);
+ const userId=useRef<string|null>(null);
+ function resetCamera(){setZoom(1);setPan({x:0,y:0});}
+ useEffect(()=>{
+  setNow(Date.now());
+  const timer=window.setInterval(()=>setNow(Date.now()),1000);
+  const client=api();
+  if(!client)return()=>window.clearInterval(timer);
+  function update(u:User|null){const next=u?.id??null;if(userId.current!==next){userId.current=next;setSnapshot(null);setPending(next?restore(next):null);}setUser(u);}
+  void client.auth.getUser().then(({data})=>update(data.user));
+  const {data:listener}=client.auth.onAuthStateChange((_event,session)=>update(session?.user??null));
+  return()=>{window.clearInterval(timer);listener.subscription.unsubscribe();};
+ },[]);
+ useEffect(()=>{if(!user)return;const client=api();if(!client)return;let cancelled=false;void readOnlineSnapshot(client,user.id).then(s=>{if(!cancelled)setSnapshot(s);}).catch(()=>{if(!cancelled)setNotice('Không thể tải nông trại từ máy chủ.');});return()=>{cancelled=true;};},[user?.id]);
+ async function login(){const client=api();if(!client||!email.trim()||busy)return;setBusy(true);try{const {error}=await client.auth.signInWithOtp({email:email.trim(),options:{emailRedirectTo:window.location.origin+window.location.pathname}});setNotice(error?'Không gửi được liên kết đăng nhập.':'Đã gửi liên kết. Hãy mở email để xác thực.');}catch{setNotice('Không kết nối được dịch vụ đăng nhập.');}finally{setBusy(false);}}
+ async function create(){const client=api();if(!client||!user||busy||pending)return;setBusy(true);try{await createOnlineFarm(client);setSnapshot(await readOnlineSnapshot(client,user.id));setNotice('Nông trại online đã sẵn sàng.');}catch{setNotice('Không tạo hoặc tải được nông trại online.');}finally{setBusy(false);}}
+ async function refresh(){const client=api();if(!client||!user||busy)return;setBusy(true);try{setSnapshot(await readOnlineSnapshot(client,user.id));setNotice('Đã tải dữ liệu mới nhất từ máy chủ.');}catch{setNotice('Không thể tải lại dữ liệu.');}finally{setBusy(false);}}
+ async function command(c:OnlineCommand,retry=false){const client=api();if(!client||!user||busy||(!retry&&pending))return;const task=retry&&pending?pending:{command:c,requestId:crypto.randomUUID()};try{localStorage.setItem(pendingKey(user.id),JSON.stringify(task));}catch{setNotice('Không thể lưu mã yêu cầu. Không gửi lệnh để tránh xử lý trùng.');return;}setPending(task);setBusy(true);try{await applyOnlineCommand(client,task.command,task.requestId);const s=await readOnlineSnapshot(client,user.id);if(!s)throw new Error('Missing farm');setSnapshot(s);localStorage.removeItem(pendingKey(user.id));setPending(null);setNotice('Máy chủ đã xác nhận lệnh và lưu nông trại.');}catch{setNotice('Chưa xác nhận được lệnh. Kiểm tra lại hoặc thử lại bằng cùng mã; không gửi lệnh mới.');}finally{setBusy(false);}}
+ function clickTile(index:number){if(!snapshot||busy||pending||suppress.current)return;const tile=snapshot.plots.find(p=>p.index===index);if(tile?.crop!=null){const seconds=Math.max(0,Math.ceil((Date.parse(tile.plantedAt!)+CROPS[tile.crop].seconds*1000-now)/1000));if(seconds>0){setNotice('Cây còn '+timeLabel(seconds)+'.');return;}void command({action:'harvest',index});}else{if(snapshot.coins<CROPS[selected].cost){setNotice('Không đủ vàng.');return;}void command({action:'plant',index,crop:selected});}}
+ function pointerDown(e:React.PointerEvent<HTMLDivElement>){if(view!=='isometric')return;fingers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});if(e.pointerType==='mouse'&&e.button!==0)return;e.currentTarget.setPointerCapture(e.pointerId);if(fingers.current.size===1){pointer.current={x:e.clientX,y:e.clientY,panX:pan.x,panY:pan.y,moved:false};pinch.current=null;}else if(fingers.current.size===2){const [a,b]=[...fingers.current.values()];pinch.current={distance:Math.hypot(a.x-b.x,a.y-b.y),zoom};pointer.current=null;suppress.current=true;}}
+ function pointerMove(e:React.PointerEvent<HTMLDivElement>){if(view!=='isometric'||!fingers.current.has(e.pointerId))return;fingers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});if(fingers.current.size===2&&pinch.current){const [a,b]=[...fingers.current.values()];setZoom(pinchZoom(pinch.current.zoom,pinch.current.distance,Math.hypot(a.x-b.x,a.y-b.y)));suppress.current=true;}else if(pointer.current){const dx=e.clientX-pointer.current.x,dy=e.clientY-pointer.current.y;if(hasDragged(dx,dy))pointer.current.moved=true;if(pointer.current.moved){suppress.current=true;setPan({x:pointer.current.panX+dx,y:pointer.current.panY+dy});}}}
+ function pointerUp(e:React.PointerEvent<HTMLDivElement>){fingers.current.delete(e.pointerId);pointer.current=null;pinch.current=null;}
+ const plots=Array.from({length:64},(_,i)=>snapshot?.plots.find(p=>p.index===i)??null);
+ const ready=plots.filter(p=>p?.crop!=null&&now-Date.parse(p.plantedAt!)>=CROPS[p.crop].seconds*1000).length;
+ const growing=plots.filter(p=>p?.crop!=null&&now-Date.parse(p.plantedAt!)<CROPS[p.crop].seconds*1000).length;
+ const level=snapshot?Math.floor(Math.sqrt(snapshot.xp/25))+1:1;
+ return <main>
+  <header><div><span className="brand">🌻 FARM WORLD</span><small>V1.0 · Online Supabase</small></div><div className="wallet">🪙 {snapshot?.coins??'—'} vàng <span>⭐ Cấp {level} · {snapshot?.xp??0} XP</span></div></header>
+  <section className="hero"><h1>Nông trại của bạn 🌿</h1><p>Một nông trại duy nhất. Mọi thao tác trồng, thu hoạch, bán và nhận thưởng đều gửi đến Supabase.</p>
+   {!configured?<p role="alert">Kết nối Supabase chưa được cấu hình. Không thể chơi khi chưa kết nối máy chủ.</p>:
+    !user?<div className="account-status"><strong>Đăng nhập để chơi online</strong><div className="account-actions"><input type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email đăng nhập" aria-label="Email đăng nhập"/><button disabled={busy||!email.trim()} onClick={()=>void login()}>Gửi liên kết đăng nhập</button></div></div>:
+    <div className="account-status"><strong>👤 {user.email??'Người chơi'} · Online</strong><div className="account-actions">{!snapshot?<button disabled={busy||!!pending} onClick={()=>void create()}>Tạo / mở nông trại</button>:null}<button disabled={busy} onClick={()=>void refresh()}>↻ Tải lại từ máy chủ</button><button disabled={busy||!!pending} onClick={()=>void api()?.auth.signOut()}>Đăng xuất</button></div></div>}
+   {pending&&<div className="account-status" role="alert"><strong>⚠️ Có lệnh chưa xác nhận: {pending.command.action}</strong><p>Không gửi lệnh khác trước khi kiểm tra.</p><div className="account-actions"><button disabled={busy} onClick={()=>void refresh()}>Kiểm tra máy chủ</button><button disabled={busy} onClick={()=>void command(pending.command,true)}>Thử lại cùng mã</button><button disabled={busy} onClick={()=>{if(user&&window.confirm('Chỉ đóng khi đã kiểm tra dữ liệu máy chủ.')){localStorage.removeItem(pendingKey(user.id));setPending(null);}}}>Đã đối chiếu, đóng cảnh báo</button></div></div>}
+  </section>
+  <div className="layout"><aside><h2>🌱 Hạt giống</h2><div className="seed-strip">{CROPS.map((crop,i)=><button key={crop.name} className={'seed '+(selected===i?'active':'')} aria-pressed={selected===i} onClick={()=>setSelected(i)}><span>{crop.emoji} {crop.name}</span><small>{crop.cost} 🪙 · {crop.seconds/60} phút</small></button>)}</div>
+   <h2>📦 Kho online</h2><div className="inventory">{CROPS.map((crop,i)=><div className="inventory-item" key={crop.name}><span>{crop.emoji} {crop.name}: <strong>{snapshot?.inventory[i]??0}</strong></span><button disabled={!snapshot||busy||!!pending||!snapshot.inventory[i]} onClick={()=>void command({action:'sell',crop:i,quantity:snapshot!.inventory[i]})}>Bán tất cả · {crop.cost*3} 🪙/sp</button></div>)}</div>
+   <h2>📋 Nhiệm vụ</h2><div className="quests">{[{name:'Thu hoạch 5 lần',target:5,value:snapshot?.harvested??0,reward:20},{name:'Bán 10 sản phẩm',target:10,value:snapshot?.sold??0,reward:35},{name:'Đạt cấp 3',target:3,value:level,reward:50}].map((q,i)=><div className="quest" key={q.name}><span>{q.name} ({Math.min(q.target,q.value)}/{q.target}) · +{q.reward} 🪙</span><button disabled={!snapshot||busy||!!pending||q.value<q.target||snapshot.claimed.includes(i)} onClick={()=>void command({action:'claim',quest:i})}>{snapshot?.claimed.includes(i)?'Đã nhận':'Nhận'}</button></div>)}</div>
+   <h2 className="tools-title">🧰 Công cụ</h2><button className="refresh" disabled={!snapshot||busy||!!pending||!plots.some(p=>p?.crop==null)||snapshot.coins<CROPS[selected].cost} onClick={()=>{const i=plots.findIndex(p=>p?.crop==null);if(i>=0)void command({action:'plant',index:i,crop:selected});}}>🌱 Gieo ô trống đầu tiên</button><button className="refresh" disabled={!snapshot||busy||!!pending||!ready} onClick={()=>{const i=plots.findIndex(p=>p?.crop!=null&&now-Date.parse(p.plantedAt!)>=CROPS[p.crop].seconds*1000);if(i>=0)void command({action:'harvest',index:i});}}>🧺 Thu hoạch ô chín đầu tiên ({ready})</button><p className="hint">Thao tác hàng loạt cần máy chủ xác nhận từng lệnh. Không tự ý sửa dữ liệu trên thiết bị.</p></aside>
+   <section className="farm" id="farm-board"><div className="farm-title">🏡 Nông trại online <span>8 × 8</span></div><p className="stats">🟫 Trống: {64-ready-growing} &nbsp; 🌱 Đang lớn: {growing} &nbsp; 🌟 Đã chín: {ready}</p><p className="status" role="status">{notice}</p><div className="view-switch" role="group" aria-label="Chế độ hiển thị"><button className={view==='isometric'?'active':''} onClick={()=>{setView('isometric');resetCamera();}}>◇ Isometric</button><button className={view==='classic'?'active':''} onClick={()=>{setView('classic');resetCamera();}}>▦ Cổ điển</button></div><div className="camera-toolbar"><button disabled={view!=='isometric'} onClick={()=>setZoom(v=>clampZoom(v-.15))}>−</button><output>{Math.round(zoom*100)}%</output><button disabled={view!=='isometric'} onClick={()=>setZoom(v=>clampZoom(v+.15))}>+</button><button onClick={resetCamera}>⌂ Đặt lại</button></div><p className="camera-hint">Kéo để di chuyển; chụm hai ngón để phóng to.</p>
+   <div className={'farm-scene '+(view==='isometric'?'scene-iso':'scene-classic')} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerUp} onClickCapture={e=>{if(suppress.current){e.preventDefault();e.stopPropagation();suppress.current=false;}}}><div className="camera-layer" style={view==='isometric'?{transform:`translate(${pan.x}px, ${pan.y}px) scale(${zoom})`}:undefined}><div className="farm-decor" aria-hidden="true"><span>🏠</span><span>🌳</span><span>🌻</span></div><div className="tiles">{plots.map((p,i)=>{const crop=p?.crop==null?null:CROPS[p.crop];const seconds=crop?Math.max(0,Math.ceil((Date.parse(p!.plantedAt!)+crop.seconds*1000-now)/1000)):0;const ripe=!!crop&&seconds===0;return <button key={i} disabled={!snapshot||busy||!!pending} onClick={()=>clickTile(i)} className={'tile '+(ripe?'ready':'')} title={!crop?'Gieo hạt':ripe?'Thu hoạch':timeLabel(seconds)} aria-label={`Ô đất ${i+1}: ${!crop?'trống':ripe?crop.name+' đã chín':crop.name+' còn '+timeLabel(seconds)}`}><span>{!crop?'·':ripe?crop.emoji:'🌱'}</span>{crop&&!ripe&&<small className="countdown">{timeLabel(seconds)}</small>}</button>;})}</div></div></div><div className="footnote">🟫 Trống · 🌱 Đang lớn · 🌟 Có thể thu hoạch</div></section>
+  </div><footer>Farm World V1.0 Online · Supabase · Dữ liệu nông trại được lưu trên máy chủ. Dữ liệu offline cũ vẫn được giữ nguyên trong trình duyệt nhưng không sử dụng hoặc ghi đè.</footer>
+ </main>;
 }

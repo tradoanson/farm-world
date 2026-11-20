@@ -1,4 +1,4 @@
-# Farm World V0.2 — Offline Demo
+# Farm World V0.2.1 — Offline Demo
 
 Play: https://tradoanson.github.io/farm-world/
 
@@ -30,3 +30,8 @@ Design an isometric farm scene without changing save semantics. Multiplayer acco
 
 ## Safety
 Never commit secrets or production DB credentials. No live database is connected and no destructive database operations are performed by the demo.
+
+## Versioning and roadmap
+- [CHANGELOG.md](CHANGELOG.md): append-only release notes for each version.
+- [futurebaseline.mb](futurebaseline.mb): append-only future development baseline; never replace earlier sections.
+- Mobile V0.2.1: farm shown before shop on small screens, horizontal seed selector, portrait/landscape breakpoints and larger touch controls. Real-device Safari/Chrome validation remains a manual acceptance step.

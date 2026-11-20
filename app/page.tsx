@@ -62,6 +62,29 @@ export default function Home(){
  },[]);
  useEffect(()=>{if(!user)return;const client=api();if(!client)return;let cancelled=false;void readOnlineSnapshot(client,user.id).then(s=>{if(!cancelled)setSnapshot(s);}).catch(()=>{if(!cancelled)setNotice('Không thể tải nông trại từ máy chủ.');});return()=>{cancelled=true;};},[user?.id]);
  useEffect(()=>{if(!user)return;const client=api();if(!client)return;let cancelled=false;async function sync(){if(document.visibilityState!=='visible'||busyRef.current||!client)return;try{const next=await readOnlineSnapshot(client,user!.id);if(!cancelled&&!busyRef.current)setSnapshot(next);}catch{/* Keep last confirmed snapshot. */}}const onFocus=()=>{void sync();};window.addEventListener('focus',onFocus);document.addEventListener('visibilitychange',onFocus);const timer=window.setInterval(onFocus,30000);return()=>{cancelled=true;window.clearInterval(timer);window.removeEventListener('focus',onFocus);document.removeEventListener('visibilitychange',onFocus);};},[user?.id]);
+ // V2.5: realtime invalidation with polling fallback. No direct trust in change payloads.
+ useEffect(()=>{
+  if(!user||!snapshot?.farmId)return;
+  const client=api();if(!client)return;
+  let cancelled=false;let fetching=false;let needsRefresh=false;
+  const sync=async()=>{
+   if(cancelled||busyRef.current||document.visibilityState!=='visible'){needsRefresh=true;return;}
+   if(fetching){needsRefresh=true;return;}
+   fetching=true;
+   try{
+    const next=await readOnlineSnapshot(client,user.id);
+    if(!cancelled&&!busyRef.current&&next?.farmId===snapshot.farmId)
+     setSnapshot(previous=>previous&&previous.farmId===next.farmId&&previous.revision>next.revision?previous:next);
+   }catch{/* The existing 30-second polling remains the fallback. */}
+   finally{fetching=false;if(needsRefresh&&!cancelled&&!busyRef.current){needsRefresh=false;void sync();}}
+  };
+  const channel=client.channel('farm-state-'+snapshot.farmId)
+   .on('postgres_changes',{event:'UPDATE',schema:'public',table:'farm_state',filter:'farm_id=eq.'+snapshot.farmId},()=>{void sync();})
+   .subscribe();
+  const onVisible=()=>{if(document.visibilityState==='visible'&&needsRefresh){needsRefresh=false;void sync();}};
+  document.addEventListener('visibilitychange',onVisible);
+  return()=>{cancelled=true;document.removeEventListener('visibilitychange',onVisible);void client.removeChannel(channel);};
+ },[user?.id,snapshot?.farmId]);
  async function upgrade(kind:UpgradeKind,retry=false){const client=api();if(!client||!user||!snapshot||busy||pending||(!retry&&upgradePending))return;const task=retry&&upgradePending?upgradePending:{kind,requestId:crypto.randomUUID()};try{localStorage.setItem(upgradeKey(user.id),JSON.stringify(task));}catch{setNotice('Không lưu được mã nâng cấp; đã dừng an toàn.');return;}setUpgradePending(task);busyRef.current=true;setBusy(true);try{const {data,error}=await client.rpc('farm_upgrade',{p_request_id:task.requestId,p_kind:task.kind});if(error||!data||data.kind!==task.kind)throw new Error('Upgrade unconfirmed');const next=await readOnlineSnapshot(client,user.id);if(!next)throw new Error('Snapshot missing');setSnapshot(next);const {data:levels,error:levelsError}=await client.from('farm_upgrades').select('warehouse_level,barn_level').eq('farm_id',next.farmId).maybeSingle();if(levelsError||!levels)throw new Error('Upgrade state missing');setUpgrades(levels);localStorage.removeItem(upgradeKey(user.id));setUpgradePending(null);setNotice('🏗️ Nâng cấp '+(task.kind==='warehouse'?'nhà kho':'nhà xưởng')+' lên cấp '+data.level+' thành công.');}catch{setNotice('⚠️ Nâng cấp chưa xác nhận. Thử lại cùng mã, không mua nâng cấp khác.');}finally{busyRef.current=false;setBusy(false);}}
  async function loadCommunity(){const client=api();if(!client||!user)return;const [leaders,profile]=await Promise.all([client.rpc('farm_leaderboard'),client.from('farm_public_profiles').select('display_name,visible').eq('owner_id',user.id).maybeSingle()]);if(leaders.error){setNotice('Không tải được bảng xếp hạng.');return;}setLeaderboard((leaders.data??[]) as Leader[]);if(profile.data){setProfileName(profile.data.display_name);setProfileVisible(profile.data.visible);}}
  async function saveProfile(){const client=api();if(!client||!user||busy)return;const name=profileName.trim();if(name.length<2||name.length>24){setNotice('Tên cộng đồng phải dài 2–24 ký tự.');return;}busyRef.current=true;setBusy(true);try{const {error}=await client.from('farm_public_profiles').upsert({owner_id:user.id,display_name:name,visible:profileVisible},{onConflict:'owner_id'});if(error)throw error;setNotice(profileVisible?'Đã lưu hồ sơ công khai.':'Đã lưu hồ sơ ở chế độ riêng tư.');await loadCommunity();}catch{setNotice('Không lưu được hồ sơ cộng đồng.');}finally{busyRef.current=false;setBusy(false);}}

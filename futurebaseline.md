@@ -53,3 +53,10 @@ Tên tệp chuẩn: `futurebaseline.md`. Đây là nhật ký kế hoạch **app
 - Chính sách tương thích: giữ vàng, ô đất, tiến độ cũ; JSON backup V2 chứa cả farm/progression và nhập được JSON V1. Không reset DB hay đụng hệ thống online.
 - Kiểm thử: migration, giá bán, chống nhận thưởng lặp, CI typecheck/lint/tests/build, GitHub Pages và iOS Safari/Android Chrome thực tế.
 - Quyết định tiếp theo V0.5: thiết kế đăng nhập, cô lập nông trại theo tài khoản và quyền truy cập; GitHub Pages chỉ demo offline, không giả lập bảo mật backend.
+
+## Baseline 008 — 2026-11-20 — V0.5 nền tảng tài khoản an toàn
+- Chọn hướng V0.5 là hợp đồng bảo mật + kiến trúc + kiểm thử và minh bạch chế độ Khách offline, không triển khai login giả trên GitHub Pages.
+- Bắt buộc xác thực bằng backend và kiểm tra owner_id/farm_id trên mọi API; session bảo mật, chống CSRF/rate limit, idempotent requestId, giao dịch kinh tế và thời gian server.
+- Không đổi save V1/progression V2; dữ liệu hiện tại không bị reset hoặc tự động đẩy lên mạng.
+- Gate: typecheck/lint/tests/build/Pages PASS và thử mobile; chưa được tuyên bố online multiplayer cho đến khi có backend V0.6.
+- V0.6: chọn hosting API/identity/PostgreSQL, additive migrations, kiểm thử hai tài khoản cô lập, backup/rollback, server-authoritative actions và audit.

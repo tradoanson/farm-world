@@ -130,3 +130,11 @@ button{font:inherit}
  .farm-scene.scene-iso .tiles{transform:rotate(45deg) scale(.62)}
 }
 @media(prefers-reduced-motion:reduce){.scene-iso .camera-layer{will-change:auto}}
+
+/* V0.4 inventory and quests */
+.inventory,.quests{display:grid;gap:8px}
+.inventory-item,.quest{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid #d8e8d3;background:#f7fbf4;border-radius:10px;padding:9px;font-size:12px}
+.inventory-item button,.quest button{min-height:40px;border:1px solid #4e9160;border-radius:8px;background:#e5f5e5;color:#205c34;padding:6px;cursor:pointer;font-size:12px;flex-shrink:0}
+.inventory-item button:disabled,.quest button:disabled{opacity:.45;cursor:not-allowed}
+.inventory-item button:focus-visible,.quest button:focus-visible{outline:3px solid #225f9c}
+@media(max-width:800px){.inventory-item,.quest{font-size:13px}.inventory-item button,.quest button{min-height:44px}}

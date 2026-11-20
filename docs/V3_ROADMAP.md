@@ -11,7 +11,7 @@ Balance **2.5D/isometric graphics**, **animal husbandry**, **processing/producti
 - Additive migrations only, with backward compatibility and documented forward-fix/recovery. No production reset, destructive smoke test, or unapproved data migration.
 - Server-side authenticated RPCs must authorize owner and validate every input; economic changes must be atomic, idempotent by user-scoped request UUID, and concurrency-safe.
 - No live-DB test accounts or production destructive/concurrency experiments. Run E2E and load tests against an isolated environment.
-- No merge to main for a feature with failed mandatory gates. A green CI is not proof of two-user E2E, mobile performance, backup restore, or security acceptance.
+- For UI-only, backward-compatible release candidates without DB/schema/RPC/economic changes: merge to main and deploy the main webgame after CI (typecheck, lint, unit tests, build) PASS, provided outstanding manual gates are explicitly marked UNRESOLVED and the UI labels the release RC. Do not label Stable. For DB/schema/RPC/economic changes, require isolated transaction/security/backup gates before production deployment. A green CI is not proof of two-user E2E, mobile performance, backup restore, or security acceptance.
 - Each release must include code, tests, evidence links, migration inventory, known issues and a version/changelog update.
 
 ## V2.9 exit blockers / V3.0 entry
@@ -53,7 +53,7 @@ Full regression, security review, two-account E2E, backup restore rehearsal, mob
 1. Create branch `feature/v3-N-<slug>` from main for each version; add tests and docs in same PR.
 2. Run `.github/workflows/ci.yml` and `.github/workflows/v3-roadmap.yml` (manual dispatch for roadmap audit). No automatic deployment of planning branches.
 3. For any DB change: separate migration review, isolated execution, backup verification and explicit production release approval.
-4. Merge only when required gates are PASS; main deployment remains `.github/workflows/pages.yml`.
+4. For additive UI-only RCs, merge after CI PASS and deploy via `.github/workflows/pages.yml`, explicitly disclosing UNRESOLVED manual gates. For economic/DB/RPC changes, do not merge until relevant isolated security/concurrency/backup gates PASS. Stable designation always requires all acceptance gates.
 5. Record commit SHA, CI/Pages URLs, release checklist and any unresolved manual gates in `docs/V3_RELEASE_EVIDENCE.md`.
 6. Do not conflate 'code merged', 'Pages deployed', and 'business acceptance'.
 

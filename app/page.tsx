@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { clampZoom, hasDragged, pinchZoom } from '../lib/farm-camera';
 import { CROPS, SAVE_KEY, freshFarm, harvest, harvestAll, isValidFarm, plant, plantAvailable, remainingSeconds, timeLabel, type FarmSave } from '../lib/farm-demo';
 
 export default function Home() {
@@ -17,7 +18,6 @@ export default function Home() {
   const pinch = useRef<{ distance: number; zoom: number } | null>(null);
   const suppressClick = useRef(false);
   const lastGesture = useRef(false);
-  const clampZoom = (value: number) => Math.min(2, Math.max(0.65, value));
   function resetCamera() { setZoom(1); setPan({ x: 0, y: 0 }); }
   function pointerDown(event: React.PointerEvent<HTMLDivElement>) {
     if (view !== 'isometric') return;
@@ -43,13 +43,13 @@ export default function Home() {
     if (pointers.current.size === 2 && pinch.current) {
       const [a, b] = [...pointers.current.values()];
       const distance = Math.hypot(a.x - b.x, a.y - b.y);
-      if (pinch.current.distance > 0) setZoom(clampZoom(pinch.current.zoom * distance / pinch.current.distance));
+      setZoom(pinchZoom(pinch.current.zoom, pinch.current.distance, distance));
       suppressClick.current = true;
       lastGesture.current = true;
     } else if (gesture.current && pointers.current.size === 1) {
       const dx = event.clientX - gesture.current.x;
       const dy = event.clientY - gesture.current.y;
-      if (Math.hypot(dx, dy) > 8) gesture.current.moved = true;
+      if (hasDragged(dx, dy)) gesture.current.moved = true;
       if (gesture.current.moved) {
         suppressClick.current = true;
         lastGesture.current = true;

@@ -1,4 +1,4 @@
-# Farm World V0.5 — Offline Demo
+# Farm World V0.6 — Offline Demo
 
 Play: https://tradoanson.github.io/farm-world/
 
@@ -60,3 +60,8 @@ Never commit secrets or production DB credentials. No live database is connected
 - Pure authorization contract and tests in `lib/farm-authorization.ts` and `tests/farm-authorization.test.ts`.
 - Backend architecture, database model and rollout gates: [V0.5 account architecture](docs/V0.5_ACCOUNT_ARCHITECTURE.md).
 - No user accounts or online synchronization are operational yet.
+
+## V0.6 backend foundation
+- Additive staging PostgreSQL schema and owner-scoped read API (not deployed to GitHub Pages).
+- No live login or cloud synchronization. Snapshot writes disabled (501) until server-authoritative economy is ready.
+- See [backend handoff](docs/V0.6_BACKEND_HANDOFF.md).

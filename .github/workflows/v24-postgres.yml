@@ -1,0 +1,41 @@
+name: V2.4 PostgreSQL Integration
+on:
+  push:
+    branches: [main, 'feature/v2-2-to-v2-9-integrated']
+    paths:
+      - 'db/migrations/0004_v24_social_staging.sql'
+      - 'db/migrations/0007_v24_public_visits_staging.sql'
+      - 'tests/sql/v24_*.sql'
+      - '.github/workflows/v24-postgres.yml'
+  pull_request:
+jobs:
+  v24-integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: test_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: test_only
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up isolated fixture
+        run: psql -X -v ON_ERROR_STOP=1 -f tests/sql/v24_fixture.sql
+      - name: Apply V2.4 candidate migrations
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f db/migrations/0004_v24_social_staging.sql
+          psql -X -v ON_ERROR_STOP=1 -f db/migrations/0007_v24_public_visits_staging.sql
+      - name: Exercise social RPC and RLS
+        run: psql -X -v ON_ERROR_STOP=1 -f tests/sql/v24_integration.sql

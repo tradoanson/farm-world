@@ -17,5 +17,12 @@ describe('V1.1 online bulk planner',()=>{
   const s={...base,coins:100,plots:[{index:2,crop:0,plantedAt:new Date(0).toISOString()}]};
   expect(bulkPlan(s,'plant',0,0)).not.toContain(2);
  });
+ it('limits planting to unlocked land but allows legacy harvest beyond the limit',()=>{
+  const s={...base,coins:100,plots:[{index:20,crop:0,plantedAt:new Date(0).toISOString()}]};
+  expect(bulkPlan(s,'plant',0,200000,16)).toEqual(Array.from({length:16},(_,i)=>i));
+  expect(bulkPlan(s,'harvest',0,200000,16)).toEqual([20]);
+  expect(plantEstimate(s,0,16).empty).toBe(16);
+  expect(bulkPlan(s,'plant',0,200000,65)).toEqual([]);
+ });
  it('rejects invalid crop indices',()=>expect(bulkPlan(base,'plant',99,0)).toEqual([]));
 });

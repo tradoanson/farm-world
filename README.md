@@ -1,4 +1,4 @@
-# Farm World V0.4 — Offline Demo
+# Farm World V0.5 — Offline Demo
 
 Play: https://tradoanson.github.io/farm-world/
 
@@ -25,8 +25,8 @@ npm run build
 
 GitHub Actions runs CI and a separate static GitHub Pages deployment. Pages workflow temporarily excludes `app/api` **in the build runner only** and sets `FARM_WORLD_STATIC_EXPORT=true`. API source files remain in the repository for future backend work.
 
-## Next stage: V0.5
-Design real account authentication and per-farm authorization with a suitable backend; GitHub Pages remains an offline demo. Multiplayer accounts require a separate backend with authorization, farm isolation, server-authoritative actions, transactions, idempotency and database migrations. GitHub Pages alone cannot host that backend.
+## Next stage: V0.6
+Implement real authentication, per-farm isolation and server-authoritative transactions with a suitable backend. V0.5 includes the security contract and design, not a live login. Multiplayer accounts require a separate backend with authorization, farm isolation, server-authoritative actions, transactions, idempotency and database migrations. GitHub Pages alone cannot host that backend.
 
 ## Safety
 Never commit secrets or production DB credentials. No live database is connected and no destructive database operations are performed by the demo.
@@ -54,3 +54,9 @@ Never commit secrets or production DB credentials. No live database is connected
 - Harvested crops enter inventory; sell stock for 3× seed price. Earn XP and levels and claim three one-time quest rewards.
 - Legacy farm data stays in the original V1 localStorage key. Progression is stored separately as V2; V2 backup exports both and imports V1 backups.
 - No online accounts or secure server-side economy yet. Physical mobile testing remains manual.
+
+## V0.5 account foundation
+- Offline guest mode explicitly shown in UI; no mock passwords or insecure browser-based login.
+- Pure authorization contract and tests in `lib/farm-authorization.ts` and `tests/farm-authorization.test.ts`.
+- Backend architecture, database model and rollout gates: [V0.5 account architecture](docs/V0.5_ACCOUNT_ARCHITECTURE.md).
+- No user accounts or online synchronization are operational yet.

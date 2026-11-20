@@ -28,8 +28,8 @@ jobs:
       - run: npm test
       - name: Build static demo without server API routes
         env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || 'https://nnhcxdxtbjqmwvhzunyc.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_B7rbiONpKgaaBVa1NLsTDQ_qmi4y9i0' }}
         run: |
           rm -rf app/api
           FARM_WORLD_STATIC_EXPORT=true npm run build

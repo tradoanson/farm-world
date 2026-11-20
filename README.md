@@ -1,4 +1,4 @@
-# Farm World V0.2.1 — Offline Demo
+# Farm World V0.3A — Offline Demo
 
 Play: https://tradoanson.github.io/farm-world/
 
@@ -35,3 +35,8 @@ Never commit secrets or production DB credentials. No live database is connected
 - [CHANGELOG.md](CHANGELOG.md): append-only release notes for each version.
 - [futurebaseline.md](futurebaseline.md): append-only future development baseline; never replace earlier sections.
 - Mobile V0.2.1: farm shown before shop on small screens, horizontal seed selector, portrait/landscape breakpoints and larger touch controls. Real-device Safari/Chrome validation remains a manual acceptance step.
+
+## V0.3A scene
+- Isometric diamond-style farm via CSS, with original emoji/CSS scenery and a Classic view toggle.
+- Both views operate on the same 64 saved plots; existing V0.1B/V0.2 data is unchanged.
+- Pan, zoom, professional sprite art and real-device touch validation remain for V0.3B/V0.3C.

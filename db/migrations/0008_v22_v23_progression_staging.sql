@@ -12,7 +12,7 @@ AS $function$
 declare
  v_owner uuid := (select auth.uid()); v_farm uuid; v_coins bigint; v_harvested bigint; v_revision bigint; v_xp bigint; v_sold bigint;
  v_crop integer; v_planted timestamptz; v_cost integer; v_duration integer; v_stock bigint; v_reward integer; v_target bigint;
- v_result jsonb; v_prev public.farm_commands%rowtype; v_level integer; v_warehouse_level integer; v_inventory_total bigint;
+ v_result jsonb; v_prev public.farm_commands%rowtype; v_level integer; v_warehouse_level integer; v_inventory_total bigint; v_barn_level integer;
 begin
  if v_owner is null then raise exception 'authentication required' using errcode='28000'; end if;
  if p_request_id is null or p_action is null or p_action not in ('plant','harvest','sell','claim')
@@ -36,7 +36,8 @@ begin
  if not found then raise exception 'farm state missing' using errcode='P0002'; end if;
  v_level:=pg_catalog.floor(pg_catalog.sqrt(v_xp::numeric/25))::integer+1;
  if p_action='plant' then
-  if p_plot_index>=pg_catalog.least(64,16+((v_level-1)/2)*4) then
+  select coalesce(barn_level,0) into v_barn_level from public.farm_upgrades where farm_id=v_farm;
+  if p_plot_index>=pg_catalog.least(64,16+((v_level-1)/2)*4+coalesce(v_barn_level,0)*4) then
    raise exception 'plot locked by level' using errcode='P0001';
   end if;
   if v_level<(array[1,2,3,5,8])[p_crop+1] then

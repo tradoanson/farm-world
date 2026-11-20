@@ -1,8 +1,6 @@
 import postgres from 'postgres';
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import { isValidFarm } from '../farm-demo';
-import { validProgression } from '../farm-progression';
-import { authorizeFarm, isValidCommand, type Principal } from '../farm-authorization';
+import { authorizeFarm, type Principal } from '../farm-authorization';
 
 let sqlClient: ReturnType<typeof postgres> | undefined;
 function db() {
@@ -36,24 +34,4 @@ export async function readOwnedFarm(principal: Principal, farmId: string) {
   const record = rows[0];
   if (!authorizeFarm(principal, { id: String(record.id), ownerId: String(record.owner_id) }, 'read', Date.now()).allowed) return null;
   return { farm: record.farm_json, progression: record.progression_json, revision: Number(record.revision) };
-}
-export async function applyOwnedSnapshot(principal: Principal, body: unknown) {
-  if (!body || typeof body !== 'object') return { status: 400, error: 'INVALID_REQUEST' };
-  const v = body as Record<string, unknown>;
-  if (!isValidCommand(v.command) || v.command.action !== 'backup' || !isValidFarm(v.farm) || !validProgression(v.progression) || !Number.isSafeInteger(v.expectedRevision) || Number(v.expectedRevision) < 0) return { status: 400, error: 'INVALID_REQUEST' };
-  const command = v.command;
-  const sql = db();
-  return sql.begin(async tx => {
-    const rows = await tx`SELECT id, owner_id, revision FROM farm_states WHERE id = ${command.farmId} AND owner_id = ${principal.userId} FOR UPDATE`;
-    if (!rows.length) return { status: 404, error: 'FARM_NOT_FOUND' };
-    if (!authorizeFarm(principal, { id: String(rows[0].id), ownerId: String(rows[0].owner_id) }, 'backup', Date.now()).allowed) return { status: 403, error: 'FORBIDDEN' };
-    const prior = await tx`SELECT response_json FROM farm_requests WHERE farm_id = ${command.farmId} AND request_id = ${command.requestId} LIMIT 1`;
-    if (prior.length) return { status: 200, result: prior[0].response_json };
-    if (Number(rows[0].revision) !== v.expectedRevision) return { status: 409, error: 'REVISION_CONFLICT' };
-    const nextRevision = Number(rows[0].revision) + 1;
-    await tx`UPDATE farm_states SET farm_json = ${JSON.stringify(v.farm)}::jsonb, progression_json = ${JSON.stringify(v.progression)}::jsonb, revision = ${nextRevision}, updated_at = now() WHERE id = ${command.farmId} AND owner_id = ${principal.userId}`;
-    const result = { revision: nextRevision };
-    await tx`INSERT INTO farm_requests (farm_id, request_id, response_json) VALUES (${command.farmId}, ${command.requestId}, ${JSON.stringify(result)}::jsonb)`;
-    return { status: 200, result };
-  });
 }

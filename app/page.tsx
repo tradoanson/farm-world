@@ -95,7 +95,8 @@ export default function Home(){
  async function command(c:OnlineCommand,retry=false){const client=api();if(!client||!user||busy||upgradePending||(!retry&&pending))return;const task=retry&&pending?pending:{command:c,requestId:crypto.randomUUID()};try{localStorage.setItem(pendingKey(user.id),JSON.stringify(task));}catch{setNotice('Không thể lưu mã yêu cầu. Không gửi lệnh để tránh xử lý trùng.');return;}setPending(task);busyRef.current=true;setBusy(true);try{await applyOnlineCommand(client,task.command,task.requestId);const s=await readOnlineSnapshot(client,user.id);if(!s)throw new Error('Missing farm');setSnapshot(s);localStorage.removeItem(pendingKey(user.id));setPending(null);setNotice(task.command.action==='plant'?'🌱 Đã gieo thành công, máy chủ đã lưu.':task.command.action==='harvest'?'🧺 Thu hoạch thành công, nông sản đã vào kho.':task.command.action==='sell'?'💰 Bán thành công, vàng đã được cập nhật.':'🎁 Đã nhận thưởng nhiệm vụ.');}catch{setNotice('Chưa xác nhận được lệnh. Kiểm tra lại hoặc thử lại bằng cùng mã; không gửi lệnh mới.');}finally{busyRef.current=false;setBusy(false);}}
  async function bulk(action:'plant'|'harvest'){
   const client=api();if(!client||!user||!snapshot||busy||pending||upgradePending)return;
-  const targets=bulkPlan(snapshot,action,selected,Date.now());
+  if(action==='plant'&&farmLevel(snapshot.xp)<cropUnlockLevel(selected)){setNotice('Hạt giống chưa mở khóa theo cấp.');return;}
+  const targets=bulkPlan(snapshot,action,selected,Date.now(),unlockedPlotCountWithBarn(farmLevel(snapshot.xp),upgrades.barn_level));
   const affordable=targets.length;
   if(!affordable){setNotice(action==='plant'?'Không có ô trống hoặc không đủ vàng.':'Không có cây đã chín.');return;}
   busyRef.current=true;
@@ -151,7 +152,7 @@ export default function Home(){
  const economy=economyOverview(snapshot);
  const openPlots=unlockedPlotCountWithBarn(level,upgrades.barn_level);
  const storageLimit=warehouseCapacity(upgrades.warehouse_level);
- const estimate=plantEstimate(snapshot,selected);
+ const estimate=plantEstimate(snapshot,selected,openPlots);
  const sellable=snapshot?.inventory.reduce((sum,quantity)=>sum+quantity,0)??0;
  const saleValue=snapshot?.inventory.reduce((sum,quantity,i)=>sum+quantity*CROPS[i].cost*3,0)??0;
  const nextRipe=plots.filter(p=>p?.crop!=null).map(p=>Date.parse(p!.plantedAt!)+CROPS[p!.crop!].seconds*1000).filter(t=>t>now).sort((a,b)=>a-b)[0];

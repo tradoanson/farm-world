@@ -163,3 +163,13 @@ button{font:inherit}
  .quick-seeds button.active{background:#327e49;color:#fff;border-color:#327e49}
  .quick-action-grid button:focus-visible,.quick-seeds button:focus-visible{outline:3px solid #245d9a;outline-offset:2px}
 }
+
+/* V1.3 economy shop: responsive, touch-friendly, transparent server-backed prices. */
+.economy-panel{border:1px solid #a9cda6;background:#f2faee;border-radius:13px;padding:12px;margin-bottom:14px}
+.economy-panel p{font-size:13px;line-height:1.6;margin:6px 0}
+.economy-crops{display:grid;grid-template-columns:1fr;gap:7px;margin-top:10px}
+.economy-crops button{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-height:60px;padding:9px 11px;background:#fff;border:1px solid #a3c5a2;border-radius:10px;color:#25412c;cursor:pointer;text-align:left}
+.economy-crops button.active{background:#e1f3df;border:2px solid #327e49}
+.economy-crops button span{font-size:12px}.economy-crops button small{margin:0;font-size:11px}
+.economy-crops button:focus-visible{outline:3px solid #245d9a;outline-offset:2px}
+@media(max-width:800px){.economy-crops{grid-template-columns:repeat(2,minmax(0,1fr))}.economy-crops button{min-width:0}}

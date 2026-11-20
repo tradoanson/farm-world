@@ -60,3 +60,9 @@ Lịch sử phiên bản được ghi nối tiếp, không xóa hoặc viết l�
 - Giao diện hiển thị rõ trạng thái Khách offline; không giả lập tài khoản hoặc lưu mật khẩu ở GitHub Pages.
 - Giữ nguyên save V1 và progression V2; không kết nối database hoặc sửa dữ liệu người chơi.
 - Gate: CI/Pages PASS; kiểm thử thiết bị thật vẫn cần xác nhận. V0.6 mới triển khai xác thực và đồng bộ thật.
+
+## V0.6 — 2026-11-20 (backend foundation, chưa online)
+- Migration PostgreSQL additive chưa chạy; API GET kiểm tra phiên HMAC, hạn dùng và owner_id.
+- API ghi snapshot trả 501 để ngăn chấp nhận vàng/XP từ client.
+- Giữ GitHub Pages offline và save cũ. Chưa có login, host backend, sync hoặc economy server-side.
+- Xem docs/V0.6_BACKEND_HANDOFF.md.

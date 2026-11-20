@@ -149,3 +149,17 @@ button{font:inherit}
 .account-actions button{min-height:44px;border:1px solid #458357;border-radius:8px;background:#e3f4e3;color:#174d29;padding:8px;cursor:pointer}
 .account-actions button:disabled{opacity:.5;cursor:not-allowed}
 .account-actions button:focus-visible,.account-actions input:focus-visible{outline:3px solid #245d9a}
+
+/* V1.2 mobile accessibility: controls must appear before the farm board, not below it. */
+.mobile-quick-actions{display:none}
+@media(max-width:800px){
+ .mobile-quick-actions{display:block;margin:0 0 14px;padding:12px;border:1px solid #88b98c;border-radius:14px;background:#f6fff0}
+ .mobile-quick-actions>strong{display:block;margin-bottom:9px;font-size:15px}
+ .quick-action-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+ .quick-action-grid button{min-width:0;min-height:52px;padding:8px 5px;border:0;border-radius:9px;background:#327e49;color:#fff;font-size:12px;font-weight:700;white-space:normal;overflow-wrap:anywhere}
+ .quick-action-grid button:disabled{opacity:.55;background:#82948a;cursor:not-allowed}
+ .quick-seeds{display:flex;gap:6px;overflow-x:auto;padding:3px 0 6px;overscroll-behavior-x:contain}
+ .quick-seeds button{flex:0 0 auto;min-height:44px;padding:7px 10px;border:1px solid #80ac86;border-radius:9px;background:#fff;color:#25412c;font-size:12px}
+ .quick-seeds button.active{background:#327e49;color:#fff;border-color:#327e49}
+ .quick-action-grid button:focus-visible,.quick-seeds button:focus-visible{outline:3px solid #245d9a;outline-offset:2px}
+}

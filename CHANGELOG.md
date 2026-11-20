@@ -77,3 +77,9 @@ Lịch sử phiên bản được ghi nối tiếp, không xóa hoặc viết l�
 - PostgreSQL transactional RPC plant/harvest: server timestamps, server costs/rewards, owner-bound auth, idempotency journal, row locks, revision.
 - Direct browser writes disabled; no live Supabase migration, online gameplay, cloud sync, or conversion of offline saves.
 - Staging acceptance and rollback in docs/V0.8_HANDOFF.md.
+
+## V0.9 — 2026-11-20 (online snapshot integration staging)
+- Bổ sung typed online adapter, đọc snapshot Supabase có xác thực, kiểm tra dữ liệu và hiển thị trạng thái máy chủ riêng biệt với offline.
+- Unit tests cho giới hạn lệnh và phản hồi RPC; chưa kích hoạt online mutation, đồng bộ hay import dữ liệu cũ.
+- Ghi nhận chênh lệch economy giữa RPC V0.8 và gameplay offline V0.4; bắt buộc khắc phục trước khi mở online gameplay.
+- Hướng dẫn và gate: docs/V0.9_HANDOFF.md.

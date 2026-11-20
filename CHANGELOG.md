@@ -32,3 +32,10 @@ Lịch sử phiên bản được ghi nối tiếp, không xóa hoặc viết l�
 - Responsive cho điện thoại, có chế độ cổ điển dự phòng để thao tác chính xác.
 - Giới hạn: đây là bản isometric CSS đầu tiên, chưa phải scene Phaser/sprite chuyên nghiệp; chưa hỗ trợ kéo/zoom bản đồ. Kiểm thử thiết bị thật còn là gate thủ công.
 - CI/Deploy: kiểm tra GitHub Actions tại commit V0.3A.
+
+## V0.3B — 2026-11-20
+- Điều khiển camera isometric: kéo bằng chuột hoặc một ngón tay, chụm hai ngón để phóng to/thu nhỏ; Ctrl + cuộn chuột để zoom.
+- Thêm nút +/−, mức zoom 65–200%, nút đưa camera về giữa; chế độ Cổ điển giữ nguyên để dự phòng.
+- Chặn thao tác gieo/thu hoạch khi đang kéo/chụm, không thay đổi logic kinh tế hoặc save version 1.
+- Cải thiện CSS mobile và trang trí CSS/emoji nhẹ, không tải thêm asset bên ngoài.
+- Gate: typecheck, lint, tests, static build, Pages; thử thao tác trên iOS Safari/Android Chrome thủ công.

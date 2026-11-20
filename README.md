@@ -65,3 +65,7 @@ Never commit secrets or production DB credentials. No live database is connected
 - Additive staging PostgreSQL schema and owner-scoped read API (not deployed to GitHub Pages).
 - No live login or cloud synchronization. Snapshot writes disabled (501) until server-authoritative economy is ready.
 - See [backend handoff](docs/V0.6_BACKEND_HANDOFF.md).
+
+## V0.7 account pilot
+- Optional Supabase email magic-link login, logout, and read-only own-farm lookup. Without public Supabase config the game stays offline.
+- Staging RLS migration and setup: [V0.7 handoff](docs/V0.7_HANDOFF.md). No cloud gameplay sync or authoritative writes yet.

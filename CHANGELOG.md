@@ -39,3 +39,10 @@ Lịch sử phiên bản được ghi nối tiếp, không xóa hoặc viết l�
 - Chặn thao tác gieo/thu hoạch khi đang kéo/chụm, không thay đổi logic kinh tế hoặc save version 1.
 - Cải thiện CSS mobile và trang trí CSS/emoji nhẹ, không tải thêm asset bên ngoài.
 - Gate: typecheck, lint, tests, static build, Pages; thử thao tác trên iOS Safari/Android Chrome thủ công.
+
+## V0.3C — 2026-11-20
+- Tăng độ an toàn khi kéo/chụm trên mobile: chặn click phát sinh sau gesture, tránh gieo/thu hoạch nhầm.
+- Tách clamp zoom, pinch ratio và ngưỡng kéo vào `lib/farm-camera.ts`, bổ sung kiểm thử hồi quy tự động.
+- Tối ưu CSS cho màn hình nhỏ, focus bàn phím, reduced-motion và bố cục camera; tăng độ tin cậy xuất file sao lưu trên mobile.
+- Giữ nguyên save key và cấu trúc save version 1; không thêm backend, không reset dữ liệu.
+- Gate: CI/Pages theo commit cuối V0.3C; Safari iOS/Chrome Android thực tế vẫn cần xác nhận thủ công.

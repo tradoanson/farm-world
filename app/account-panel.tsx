@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js';
 import { applyOnlineCommand, createOnlineFarm, readOnlineSnapshot, type OnlineCommand, type OnlineSnapshot } from '../lib/farm-online';
 
@@ -11,8 +11,21 @@ function supabase() {
   if (!configured) return null;
   return client ??= createClient(url!, key!, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
 }
+const pendingKey = (userId: string) => 'farm-world-v1-pending-' + userId;
+function restorePending(userId: string): { command: OnlineCommand; requestId: string } | null {
+  try {
+    const raw = localStorage.getItem(pendingKey(userId));
+    if (!raw) return null;
+    const data: unknown = JSON.parse(raw);
+    if (!data || typeof data !== 'object') return null;
+    const p = data as { command?: OnlineCommand; requestId?: string };
+    if (typeof p.requestId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(p.requestId) || !p.command) return null;
+    return { command: p.command, requestId: p.requestId };
+  } catch { return null; }
+}
 export default function AccountPanel() {
   const [user, setUser] = useState<User | null>(null);
+  const currentUser = useRef<string | null>(null);
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
@@ -27,11 +40,23 @@ export default function AccountPanel() {
   useEffect(() => {
     const api = supabase();
     if (!api) return;
-    void api.auth.getUser().then(({ data }) => setUser(data.user));
+    void api.auth.getUser().then(({ data }) => {
+      const next = data.user?.id ?? null;
+      if (currentUser.current !== next) {
+        currentUser.current = next;
+        setSnapshot(null);
+        setPending(next ? restorePending(next) : null);
+      }
+      setUser(data.user);
+    });
     const { data: listener } = api.auth.onAuthStateChange((_event, session) => {
+      const next = session?.user?.id ?? null;
+      if (currentUser.current !== next) {
+        currentUser.current = next;
+        setSnapshot(null);
+        setPending(next ? restorePending(next) : null);
+      }
       setUser(session?.user ?? null);
-      setSnapshot(null);
-      setPending(null);
     });
     return () => listener.subscription.unsubscribe();
   }, []);
@@ -78,6 +103,8 @@ export default function AccountPanel() {
     if (!api || !user || busy || (!retry && pending)) return;
     const requestId = retry && pending ? pending.requestId : crypto.randomUUID();
     const task = { command, requestId };
+    try { localStorage.setItem(pendingKey(user.id), JSON.stringify(task)); }
+    catch { setMessage('Không thể lưu mã lệnh an toàn. Kiểm tra bộ nhớ trình duyệt trước khi thao tác online.'); return; }
     setPending(task);
     setBusy(true);
     try {
@@ -85,6 +112,7 @@ export default function AccountPanel() {
       const next = await readOnlineSnapshot(api, user.id);
       if (!next) throw new Error('Snapshot missing');
       setSnapshot(next);
+      localStorage.removeItem(pendingKey(user.id));
       setPending(null);
       setMessage('Lệnh online đã được máy chủ xác nhận. Dữ liệu offline không thay đổi.');
     } catch {
@@ -114,7 +142,7 @@ export default function AccountPanel() {
     {!configured ? <span>👤 Khách offline · Tài khoản online chưa cấu hình · Dữ liệu vẫn lưu trên thiết bị</span> :
       user ? <div><strong>👤 {user.email ?? 'Người chơi'}</strong> · Tài khoản đã xác thực
         <div className="account-actions"><button type="button" disabled={busy} onClick={() => void createFarm()}>Tạo / mở nông trại online</button><button type="button" disabled={busy} onClick={() => void readFarm()}>Làm mới snapshot</button><button type="button" disabled={busy} onClick={() => void logout()}>Đăng xuất</button></div>
-        {pending && <div role="alert"><p>⚠️ Có lệnh chưa xác nhận: {pending.command.action}. Không gửi lệnh khác trước khi đối chiếu.</p><div className="account-actions"><button disabled={busy} onClick={() => void refreshAfterFailure()}>Kiểm tra lại máy chủ</button><button disabled={busy} onClick={() => void sendCommand(pending.command, true)}>Thử lại cùng mã</button><button disabled={busy} onClick={() => { if (window.confirm('Chỉ hủy theo dõi khi đã kiểm tra snapshot. Lệnh có thể đã thành công trên máy chủ.')) setPending(null); }}>Đã đối chiếu, đóng cảnh báo</button></div></div>}
+        {pending && <div role="alert"><p>⚠️ Có lệnh chưa xác nhận: {pending.command.action}. Không gửi lệnh khác trước khi đối chiếu.</p><div className="account-actions"><button disabled={busy} onClick={() => void refreshAfterFailure()}>Kiểm tra lại máy chủ</button><button disabled={busy} onClick={() => void sendCommand(pending.command, true)}>Thử lại cùng mã</button><button disabled={busy} onClick={() => { if (window.confirm('Chỉ hủy theo dõi khi đã kiểm tra snapshot. Lệnh có thể đã thành công trên máy chủ.')) { localStorage.removeItem(pendingKey(user.id)); setPending(null); } }}>Đã đối chiếu, đóng cảnh báo</button></div></div>}
         {snapshot && <div role="status"><small>Mã nông trại: {snapshot.farmId}</small><p>☁️ Máy chủ: {snapshot.coins} vàng · {snapshot.harvested} lượt thu hoạch · {snapshot.xp} XP · Đã bán {snapshot.sold} · Revision {snapshot.revision} · {snapshot.plots.filter(p => p.crop !== null).length}/64 ô đã gieo.</p><p>📦 Kho online: {snapshot.inventory.join(" / ")} · Nhiệm vụ đã nhận: {snapshot.claimed.length}/3.</p><small>Đây là snapshot online độc lập, không ghi đè dữ liệu offline.</small></div>}
         {snapshot && <section aria-label="Nông trại online" style={{marginTop:12}}>
           <strong>☁️ Chơi online trên Supabase (thử nghiệm)</strong>

@@ -60,3 +60,9 @@ Tên tệp chuẩn: `futurebaseline.md`. Đây là nhật ký kế hoạch **app
 - Không đổi save V1/progression V2; dữ liệu hiện tại không bị reset hoặc tự động đẩy lên mạng.
 - Gate: typecheck/lint/tests/build/Pages PASS và thử mobile; chưa được tuyên bố online multiplayer cho đến khi có backend V0.6.
 - V0.6: chọn hosting API/identity/PostgreSQL, additive migrations, kiểm thử hai tài khoản cô lập, backup/rollback, server-authoritative actions và audit.
+
+## Baseline 009 — 2026-11-20 — V0.6 backend foundation
+- Migration additive và API đọc theo owner đã viết nhưng chưa triển khai backend/DB; API mutation fail-closed 501.
+- Không tuyên bố có multiplayer hoặc đồng bộ thật. Không reset DB hoặc thay đổi save offline.
+- Gate online: identity provider, staging DB, backend host, giao dịch kinh tế server-authoritative, idempotency, test cô lập 2 tài khoản, backup/rollback.
+- CI/Pages chỉ xác minh demo offline. Tiếp tục append-only.

@@ -6,6 +6,7 @@ import SeasonsPanel from './seasons-panel';
 import {createClient,type SupabaseClient,type User} from '@supabase/supabase-js';
 import {CROPS,timeLabel} from '../lib/farm-demo';
 import {applyOnlineCommand,createOnlineFarm,readOnlineSnapshot,validateCommand,type OnlineCommand,type OnlineSnapshot} from '../lib/farm-online';
+import {reconcileSnapshot} from '../lib/farm-realtime';
 import {clampZoom,hasDragged,pinchZoom} from '../lib/farm-camera';
 import {bulkPlan,plantEstimate} from '../lib/farm-bulk';
 import {cropEconomics,economyOverview,farmLevel} from '../lib/farm-economy';
@@ -64,7 +65,7 @@ export default function Home(){
   return()=>{window.clearInterval(timer);listener.subscription.unsubscribe();};
  },[]);
  useEffect(()=>{if(!user)return;const client=api();if(!client)return;let cancelled=false;void readOnlineSnapshot(client,user.id).then(s=>{if(!cancelled)setSnapshot(s);}).catch(()=>{if(!cancelled)setNotice('Không thể tải nông trại từ máy chủ.');});return()=>{cancelled=true;};},[user?.id]);
- useEffect(()=>{if(!user)return;const client=api();if(!client)return;let cancelled=false;async function sync(){if(document.visibilityState!=='visible'||busyRef.current||!client)return;try{const next=await readOnlineSnapshot(client,user!.id);if(!cancelled&&!busyRef.current)setSnapshot(next);}catch{/* Keep last confirmed snapshot. */}}const onFocus=()=>{void sync();};window.addEventListener('focus',onFocus);document.addEventListener('visibilitychange',onFocus);const timer=window.setInterval(onFocus,30000);return()=>{cancelled=true;window.clearInterval(timer);window.removeEventListener('focus',onFocus);document.removeEventListener('visibilitychange',onFocus);};},[user?.id]);
+ useEffect(()=>{if(!user)return;const client=api();if(!client)return;let cancelled=false;async function sync(){if(document.visibilityState!=='visible'||busyRef.current||!client)return;try{const next=await readOnlineSnapshot(client,user!.id);if(!cancelled&&!busyRef.current)setSnapshot(previous=>reconcileSnapshot(previous,next));}catch{/* Keep last confirmed snapshot. */}}const onFocus=()=>{void sync();};window.addEventListener('focus',onFocus);document.addEventListener('visibilitychange',onFocus);const timer=window.setInterval(onFocus,30000);return()=>{cancelled=true;window.clearInterval(timer);window.removeEventListener('focus',onFocus);document.removeEventListener('visibilitychange',onFocus);};},[user?.id]);
  // V2.5: realtime invalidation with polling fallback. No direct trust in change payloads.
  useEffect(()=>{
   if(!user||!snapshot?.farmId)return;
@@ -77,14 +78,14 @@ export default function Home(){
    try{
     const next=await readOnlineSnapshot(client,user.id);
     if(!cancelled&&!busyRef.current&&next?.farmId===snapshot.farmId)
-     setSnapshot(previous=>previous&&previous.farmId===next.farmId&&previous.revision>next.revision?previous:next);
+     setSnapshot(previous=>reconcileSnapshot(previous,next));
    }catch{/* The existing 30-second polling remains the fallback. */}
    finally{fetching=false;if(needsRefresh&&!cancelled&&!busyRef.current){needsRefresh=false;void sync();}}
   };
   const channel=client.channel('farm-state-'+snapshot.farmId)
    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'farm_state',filter:'farm_id=eq.'+snapshot.farmId},()=>{void sync();})
-   .subscribe();
-  const onVisible=()=>{if(document.visibilityState==='visible'&&needsRefresh){needsRefresh=false;void sync();}};
+   .subscribe(status=>{if(status==='SUBSCRIBED')void sync();});
+  const onVisible=()=>{if(document.visibilityState==='visible')void sync();};
   document.addEventListener('visibilitychange',onVisible);
   return()=>{cancelled=true;document.removeEventListener('visibilitychange',onVisible);void client.removeChannel(channel);};
  },[user?.id,snapshot?.farmId]);

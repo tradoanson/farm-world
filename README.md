@@ -73,3 +73,7 @@ Never commit secrets or production DB credentials. No live database is connected
 ## V0.8 staging backend
 - Server-authoritative SQL RPC for planting and harvesting with idempotent request IDs, transaction locking, server clock and per-account isolation.
 - No live database deployed or cloud gameplay activated. [V0.8 handoff and tests](docs/V0.8_HANDOFF.md).
+
+## V0.9 online snapshot staging
+- Optional authenticated read-only snapshot of authoritative server coins/harvests/revision and planted plots. No gameplay sync or cloud write UI.
+- Typed RPC adapter and validation tests for future activation. [V0.9 handoff](docs/V0.9_HANDOFF.md).

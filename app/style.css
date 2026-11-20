@@ -138,3 +138,7 @@ button{font:inherit}
 .inventory-item button:disabled,.quest button:disabled{opacity:.45;cursor:not-allowed}
 .inventory-item button:focus-visible,.quest button:focus-visible{outline:3px solid #225f9c}
 @media(max-width:800px){.inventory-item,.quest{font-size:13px}.inventory-item button,.quest button{min-height:44px}}
+
+/* V0.5 transparent offline account state */
+.account-status{display:block;padding:10px 12px;border:1px solid #9dbca1;border-radius:12px;background:#f0f9ed;font-size:13px;font-weight:650;color:#28583a}
+.account-status a{color:#1c6038;text-decoration:underline;text-underline-offset:2px}

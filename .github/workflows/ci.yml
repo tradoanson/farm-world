@@ -1,7 +1,7 @@
 name: Farm World CI
 on:
   push:
-    branches: [main, 'feature/v2-2-to-v2-9-integrated']
+    branches: [main, 'feature/v2-2-to-v2-9-integrated', 'experiment/farm-25d-visual']
   pull_request:
 jobs:
   checks:

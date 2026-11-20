@@ -60,7 +60,7 @@ begin
  return v_id;
 end $;
 revoke all on function public.farm_market_list(integer,integer,integer,uuid) from public,anon;
-grant execute on function public.farm_market_list(integer,integer,integer) to authenticated;
+grant execute on function public.farm_market_list(integer,integer,integer,uuid) to authenticated;
 
 create or replace function public.farm_market_buy(p_listing uuid,p_request uuid)
 returns jsonb language plpgsql security definer set search_path='' as $$

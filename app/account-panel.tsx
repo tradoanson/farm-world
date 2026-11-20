@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js';
-import { readOnlineSnapshot, type OnlineSnapshot } from '../lib/farm-online';
+import { createOnlineFarm, readOnlineSnapshot, type OnlineSnapshot } from '../lib/farm-online';
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -52,6 +52,19 @@ export default function AccountPanel() {
     }
     setBusy(false);
   }
+  async function createFarm() {
+    const api = supabase();
+    if (!api || !user || busy) return;
+    setBusy(true);
+    try {
+      await createOnlineFarm(api);
+      const next = await readOnlineSnapshot(api, user.id);
+      setSnapshot(next);
+      setMessage('Đã tạo nông trại online mới. Dữ liệu offline vẫn được giữ nguyên.');
+    } catch {
+      setMessage('Không thể tạo hoặc tải nông trại online. Vui lòng thử lại.');
+    } finally { setBusy(false); }
+  }
   async function logout() {
     const api = supabase();
     if (!api) return;
@@ -63,8 +76,8 @@ export default function AccountPanel() {
   return <div className="account-status" aria-label="Tài khoản Farm World">
     {!configured ? <span>👤 Khách offline · Tài khoản online chưa cấu hình · Dữ liệu vẫn lưu trên thiết bị</span> :
       user ? <div><strong>👤 {user.email ?? 'Người chơi'}</strong> · Tài khoản đã xác thực
-        <div className="account-actions"><button type="button" disabled={busy} onClick={() => void readFarm()}>Xem dữ liệu online</button><button type="button" disabled={busy} onClick={() => void logout()}>Đăng xuất</button></div>
-        {snapshot && <div role="status"><small>Mã nông trại: {snapshot.farmId}</small><p>☁️ Máy chủ: {snapshot.coins} vàng · {snapshot.harvested} lượt thu hoạch · Revision {snapshot.revision} · {snapshot.plots.filter(p => p.crop !== null).length}/64 ô đã gieo.</p><small>Đây là snapshot online độc lập, không ghi đè dữ liệu offline.</small></div>}
+        <div className="account-actions"><button type="button" disabled={busy} onClick={() => void createFarm()}>Tạo / mở nông trại online</button><button type="button" disabled={busy} onClick={() => void readFarm()}>Làm mới snapshot</button><button type="button" disabled={busy} onClick={() => void logout()}>Đăng xuất</button></div>
+        {snapshot && <div role="status"><small>Mã nông trại: {snapshot.farmId}</small><p>☁️ Máy chủ: {snapshot.coins} vàng · {snapshot.harvested} lượt thu hoạch · {snapshot.xp} XP · Đã bán {snapshot.sold} · Revision {snapshot.revision} · {snapshot.plots.filter(p => p.crop !== null).length}/64 ô đã gieo.</p><p>📦 Kho online: {snapshot.inventory.join(" / ")} · Nhiệm vụ đã nhận: {snapshot.claimed.length}/3.</p><small>Đây là snapshot online độc lập, không ghi đè dữ liệu offline.</small></div>}
       </div> :
       <div><strong>👤 Khách offline</strong> · Đăng nhập online bằng email (thử nghiệm)
         <div className="account-actions"><input type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email của bạn" aria-label="Email đăng nhập" /><button type="button" disabled={busy || !email.trim()} onClick={() => void sendLink()}>Gửi liên kết đăng nhập</button></div>

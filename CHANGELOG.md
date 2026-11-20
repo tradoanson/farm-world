@@ -53,3 +53,10 @@ Lịch sử phiên bản được ghi nối tiếp, không xóa hoặc viết l�
 - Lưu progression version 2 trong key riêng `farm-world-v04-progression`, giữ nguyên save key nông trại V1; xuất/nhập JSON V2 gồm farm và progression, vẫn chấp nhận JSON V1.
 - Kiểm thử migration, bán hàng, chống nhận thưởng lặp, XP; không có backend hoặc multiplayer.
 - Gate CI/Pages và kiểm thử mobile cần xác minh trước khi chốt nghiệm thu.
+
+## V0.5 — 2026-11-20
+- Thiết kế nền tảng account/farm ownership và quyền truy cập server-side trong `docs/V0.5_ACCOUNT_ARCHITECTURE.md`.
+- Bổ sung hợp đồng phân quyền deny-by-default và kiểm tra command envelope, unit tests cho owner/cross-owner/anonymous/expired.
+- Giao diện hiển thị rõ trạng thái Khách offline; không giả lập tài khoản hoặc lưu mật khẩu ở GitHub Pages.
+- Giữ nguyên save V1 và progression V2; không kết nối database hoặc sửa dữ liệu người chơi.
+- Gate: CI/Pages PASS; kiểm thử thiết bị thật vẫn cần xác nhận. V0.6 mới triển khai xác thực và đồng bộ thật.

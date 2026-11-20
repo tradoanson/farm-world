@@ -52,7 +52,7 @@ declare
  v_previous public.farm_commands%rowtype;
 begin
  if v_owner is null then raise exception 'authentication required' using errcode='28000'; end if;
- if p_request_id is null or p_action not in ('plant','harvest') or p_plot_index not between 0 and 63
+ if p_request_id is null or p_action is null or p_action not in ('plant','harvest') or p_plot_index is null or p_plot_index not between 0 and 63
     or (p_action='plant' and (p_crop is null or p_crop not between 0 and 4))
     or (p_action='harvest' and p_crop is not null) then
    raise exception 'invalid command' using errcode='22023';

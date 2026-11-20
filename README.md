@@ -69,3 +69,7 @@ Never commit secrets or production DB credentials. No live database is connected
 ## V0.7 account pilot
 - Optional Supabase email magic-link login, logout, and read-only own-farm lookup. Without public Supabase config the game stays offline.
 - Staging RLS migration and setup: [V0.7 handoff](docs/V0.7_HANDOFF.md). No cloud gameplay sync or authoritative writes yet.
+
+## V0.8 staging backend
+- Server-authoritative SQL RPC for planting and harvesting with idempotent request IDs, transaction locking, server clock and per-account isolation.
+- No live database deployed or cloud gameplay activated. [V0.8 handoff and tests](docs/V0.8_HANDOFF.md).

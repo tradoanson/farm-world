@@ -27,6 +27,16 @@ describe('V2.2–V2.9 migration release safety checks',()=>{
   expect(source).toContain("auth.uid() is not null");
   expect(source).toContain('revoke all on function public.farm_season_activate(uuid) from public,anon,authenticated');
  });
+ it('V2.4 social SQL uses valid dollar quotes and rejects null transitions',()=>{
+  const source=sql('0004_v24_social_staging.sql');
+  expect(source).not.toMatch(/as \$\s*\n/i);
+  expect(source).not.toMatch(/end \$;/i);
+  expect((source.match(/as \$\$/g)??[]).length).toBe(2);
+  expect(source).toContain('p_accept is null');
+  expect(source).toContain('farm_blocks');
+  expect(source).toContain('grant select on public.farm_friend_requests to authenticated');
+  expect(source).toContain('revoke insert,update,delete on public.farm_friend_requests from authenticated');
+ });
  it('social visit never returns private farm state or inventory',()=>{
   const source=sql('0007_v24_public_visits_staging.sql');
   expect(source).toContain('p.visible=true');

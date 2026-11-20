@@ -11,6 +11,10 @@ export function unlockedPlotCount(level:number):number {
  if(!Number.isSafeInteger(level)||level<1) throw new Error('Invalid farm level');
  return Math.min(MAX_PLOTS,INITIAL_PLOTS+Math.floor((level-1)/2)*4);
 }
+export function unlockedPlotCountWithBarn(level:number,barnLevel:number):number {
+ if(!Number.isSafeInteger(barnLevel)||barnLevel<0||barnLevel>MAX_BARN_LEVEL) throw new Error('Invalid barn level');
+ return Math.min(MAX_PLOTS,unlockedPlotCount(level)+barnLevel*4);
+}
 export function isPlotUnlocked(plotIndex:number,level:number):boolean {
  return Number.isSafeInteger(plotIndex)&&plotIndex>=0&&plotIndex<unlockedPlotCount(level);
 }

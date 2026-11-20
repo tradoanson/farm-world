@@ -2,7 +2,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {createClient,type SupabaseClient,type User} from '@supabase/supabase-js';
 import {CROPS,timeLabel} from '../lib/farm-demo';
-import {applyOnlineCommand,createOnlineFarm,readOnlineSnapshot,type OnlineCommand,type OnlineSnapshot} from '../lib/farm-online';
+import {applyOnlineCommand,createOnlineFarm,readOnlineSnapshot,validateCommand,type OnlineCommand,type OnlineSnapshot} from '../lib/farm-online';
 import {clampZoom,hasDragged,pinchZoom} from '../lib/farm-camera';
 import {bulkPlan,plantEstimate} from '../lib/farm-bulk';
 import {cropEconomics,economyOverview,farmLevel} from '../lib/farm-economy';
@@ -19,7 +19,9 @@ type Upgrades={warehouse_level:number;barn_level:number};
 type Leader={display_name:string;level:number;harvested:number;sold:number;rank:number};
 const upgradeKey=(id:string)=>'farm-world-v14-upgrade-'+id;
 const pendingKey=(id:string)=>'farm-world-v1-pending-'+id;
-function restore(id:string):Pending|null{try{const raw=localStorage.getItem(pendingKey(id));if(!raw)return null;const v=JSON.parse(raw) as Pending;if(!v||!v.command||typeof v.requestId!=='string'||!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(v.requestId))return null;return v;}catch{return null;}}
+const validRequestId=(value:unknown):value is string=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+function restore(id:string):Pending|null{try{const raw=localStorage.getItem(pendingKey(id));if(!raw)return null;const v=JSON.parse(raw) as Pending;if(!v||!v.command||!validRequestId(v.requestId))return null;validateCommand(v.command);return v;}catch{return null;}}
+function restoreUpgrade(id:string):UpgradePending|null{try{const raw=localStorage.getItem(upgradeKey(id));if(!raw)return null;const v=JSON.parse(raw) as UpgradePending;return v&&validRequestId(v.requestId)&&(v.kind==='warehouse'||v.kind==='barn')?v:null;}catch{return null;}}
 export default function Home(){
  const [user,setUser]=useState<User|null>(null);
  const [email,setEmail]=useState('');
@@ -50,7 +52,7 @@ export default function Home(){
   const timer=window.setInterval(()=>setNow(Date.now()),1000);
   const client=api();
   if(!client)return()=>window.clearInterval(timer);
-  function update(u:User|null){const next=u?.id??null;if(userId.current!==next){userId.current=next;setSnapshot(null);setPending(next?restore(next):null);try{setUpgradePending(next?JSON.parse(localStorage.getItem(upgradeKey(next))||'null'):null);}catch{setUpgradePending(null);}}setUser(u);}
+  function update(u:User|null){const next=u?.id??null;if(userId.current!==next){userId.current=next;setSnapshot(null);setPending(next?restore(next):null);setUpgradePending(next?restoreUpgrade(next):null);}setUser(u);}
   void client.auth.getUser().then(({data})=>update(data.user));
   const {data:listener}=client.auth.onAuthStateChange((_event,session)=>update(session?.user??null));
   return()=>{window.clearInterval(timer);listener.subscription.unsubscribe();};

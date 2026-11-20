@@ -252,3 +252,10 @@ button{font:inherit}
 .market-list>div{display:grid;gap:5px;padding:10px;background:white;border:1px solid #d4e6c8;border-radius:9px;font-size:13px;overflow-wrap:anywhere}
 
 .market-filters{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}.market-filters button[aria-pressed="true"]{background:#3d7841;color:white;border-color:#285a31}
+
+/* V2.8 mobile keyboard accessibility and sync feedback */
+.sync-indicator{margin:10px 0;padding:9px 12px;border:1px solid #9ac59d;border-radius:9px;background:#f2f9f0;font-size:13px;line-height:1.5}
+button,input,select{touch-action:manipulation}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #165fb0;outline-offset:3px}
+@media(max-width:600px){.marketplace{padding:10px}.market-filters button{min-height:44px;flex:1 1 auto}.market-list{max-height:420px}.market-form input,.market-form select{min-height:44px}.sync-indicator{overflow-wrap:anywhere}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}

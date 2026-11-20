@@ -40,6 +40,7 @@ returns uuid language plpgsql security definer set search_path = '' as $
 declare v_sender uuid := auth.uid(); v_id uuid;
 begin
  if v_sender is null or p_receiver is null or v_sender = p_receiver then raise exception 'Invalid friend request'; end if;
+ if not exists(select 1 from public.player_farms where owner_id=v_sender) then raise exception 'Sender farm not found'; end if;
  if not exists (select 1 from public.farm_public_profiles p where p.owner_id=p_receiver and p.visible=true)
  then raise exception 'Receiver has no public profile'; end if;
  if exists (select 1 from public.farm_blocks b where
@@ -62,7 +63,7 @@ create or replace function public.farm_friend_respond(p_request uuid,p_accept bo
 returns text language plpgsql security definer set search_path = '' as $
 declare v_user uuid:=auth.uid(); v_sender uuid; v_receiver uuid; v_status text;
 begin
- if v_user is null then raise exception 'Authentication required'; end if;
+ if v_user is null or p_request is null or p_accept is null then raise exception 'Invalid friend response'; end if;
  select sender_id,receiver_id,status into v_sender,v_receiver,v_status
  from public.farm_friend_requests where id=p_request for update;
  if not found or v_receiver<>v_user or v_status<>'pending' then raise exception 'Request unavailable'; end if;

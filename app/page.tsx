@@ -9,7 +9,7 @@ import {applyOnlineCommand,createOnlineFarm,readOnlineSnapshot,validateCommand,t
 import {clampZoom,hasDragged,pinchZoom} from '../lib/farm-camera';
 import {bulkPlan,plantEstimate} from '../lib/farm-bulk';
 import {cropEconomics,economyOverview,farmLevel} from '../lib/farm-economy';
-import {cropUnlockLevel,unlockedPlotCount,warehouseCapacity} from '../lib/farm-v2-rules';
+import {cropUnlockLevel,unlockedPlotCountWithBarn,warehouseCapacity} from '../lib/farm-v2-rules';
 
 const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -138,7 +138,7 @@ export default function Home(){
    if(!failed)setNotice('Đã bán toàn bộ '+sold+' loại nông sản, nhận '+earned+' vàng (máy chủ xác nhận).');
   }finally{setBulkProgress('');busyRef.current=false;setBusy(false);}
  }
- function clickTile(index:number){if(!snapshot||busy||pending||suppress.current)return;if(index>=Math.min(64,unlockedPlotCount(farmLevel(snapshot.xp))+upgrades.barn_level*4)){setNotice('Ô đất chưa mở khóa. Hãy tăng cấp hoặc nâng cấp nhà xưởng.');return;}const tile=snapshot.plots.find(p=>p.index===index);if(tile?.crop!=null){const seconds=Math.max(0,Math.ceil((Date.parse(tile.plantedAt!)+CROPS[tile.crop].seconds*1000-now)/1000));if(seconds>0){setNotice('Cây còn '+timeLabel(seconds)+'.');return;}void command({action:'harvest',index});}else{if(level<cropUnlockLevel(selected)){setNotice('Hạt giống mở khóa từ cấp '+cropUnlockLevel(selected)+'.');return;}if(snapshot.coins<CROPS[selected].cost){setNotice('Không đủ vàng.');return;}void command({action:'plant',index,crop:selected});}}
+ function clickTile(index:number){if(!snapshot||busy||pending||suppress.current)return;if(index>=unlockedPlotCountWithBarn(farmLevel(snapshot.xp),upgrades.barn_level)){setNotice('Ô đất chưa mở khóa. Hãy tăng cấp hoặc nâng cấp nhà xưởng.');return;}const tile=snapshot.plots.find(p=>p.index===index);if(tile?.crop!=null){const seconds=Math.max(0,Math.ceil((Date.parse(tile.plantedAt!)+CROPS[tile.crop].seconds*1000-now)/1000));if(seconds>0){setNotice('Cây còn '+timeLabel(seconds)+'.');return;}void command({action:'harvest',index});}else{if(level<cropUnlockLevel(selected)){setNotice('Hạt giống mở khóa từ cấp '+cropUnlockLevel(selected)+'.');return;}if(snapshot.coins<CROPS[selected].cost){setNotice('Không đủ vàng.');return;}void command({action:'plant',index,crop:selected});}}
  function pointerDown(e:React.PointerEvent<HTMLDivElement>){if(view!=='isometric')return;fingers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});if(e.pointerType==='mouse'&&e.button!==0)return;e.currentTarget.setPointerCapture(e.pointerId);if(fingers.current.size===1){pointer.current={x:e.clientX,y:e.clientY,panX:pan.x,panY:pan.y,moved:false};pinch.current=null;}else if(fingers.current.size===2){const [a,b]=[...fingers.current.values()];pinch.current={distance:Math.hypot(a.x-b.x,a.y-b.y),zoom};pointer.current=null;suppress.current=true;}}
  function pointerMove(e:React.PointerEvent<HTMLDivElement>){if(view!=='isometric'||!fingers.current.has(e.pointerId))return;fingers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});if(fingers.current.size===2&&pinch.current){const [a,b]=[...fingers.current.values()];setZoom(pinchZoom(pinch.current.zoom,pinch.current.distance,Math.hypot(a.x-b.x,a.y-b.y)));suppress.current=true;}else if(pointer.current){const dx=e.clientX-pointer.current.x,dy=e.clientY-pointer.current.y;if(hasDragged(dx,dy))pointer.current.moved=true;if(pointer.current.moved){suppress.current=true;setPan({x:pointer.current.panX+dx,y:pointer.current.panY+dy});}}}
  function pointerUp(e:React.PointerEvent<HTMLDivElement>){fingers.current.delete(e.pointerId);pointer.current=null;pinch.current=null;}
@@ -149,7 +149,7 @@ export default function Home(){
  useEffect(()=>{if(!user)return;void loadCommunity();},[user?.id]);
  const level=farmLevel(snapshot?.xp??0);
  const economy=economyOverview(snapshot);
- const openPlots=Math.min(64,unlockedPlotCount(level)+upgrades.barn_level*4);
+ const openPlots=unlockedPlotCountWithBarn(level,upgrades.barn_level);
  const storageLimit=warehouseCapacity(upgrades.warehouse_level);
  const estimate=plantEstimate(snapshot,selected);
  const sellable=snapshot?.inventory.reduce((sum,quantity)=>sum+quantity,0)??0;

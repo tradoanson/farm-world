@@ -72,3 +72,8 @@ Lịch sử phiên bản được ghi nối tiếp, không xóa hoặc viết l�
 - Bổ sung migration Supabase RLS: owner_id unique, chỉ SELECT theo auth.uid(), không có quyền ghi client; chưa chạy migration.
 - GitHub Pages giữ chế độ khách offline khi thiếu cấu hình; không đổi save V1 và progression V2.
 - Chưa triển khai Supabase project, tạo nông trại online, đồng bộ hoặc economy server-side. Xem docs/V0.7_HANDOFF.md.
+
+## V0.8 — 2026-11-20 (authoritative economy staging)
+- PostgreSQL transactional RPC plant/harvest: server timestamps, server costs/rewards, owner-bound auth, idempotency journal, row locks, revision.
+- Direct browser writes disabled; no live Supabase migration, online gameplay, cloud sync, or conversion of offline saves.
+- Staging acceptance and rollback in docs/V0.8_HANDOFF.md.

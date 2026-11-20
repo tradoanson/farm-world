@@ -23,6 +23,7 @@ export default function Home() {
     pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
     event.currentTarget.setPointerCapture(event.pointerId);
     if (pointers.current.size === 1) {
+      suppressClick.current = false;
       gesture.current = { x: event.clientX, y: event.clientY, originX: pan.x, originY: pan.y, moved: false };
       pinch.current = null;
     } else if (pointers.current.size === 2) {

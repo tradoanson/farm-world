@@ -26,3 +26,10 @@ Tên tệp chuẩn: `futurebaseline.md`. Đây là nhật ký kế hoạch **app
 - Tên tài liệu chính thức là `futurebaseline.md` (Markdown), thay cho phần mở rộng `.mb` nhập nhầm trước đây.
 - Giữ nguyên toàn bộ Baseline 001 và 002, tiếp tục bổ sung mục mới ở cuối; không ghi đè lịch sử.
 - File `.mb` cũ được giữ làm dấu vết lịch sử, không sử dụng để cập nhật kế hoạch mới.
+
+## Baseline 004 — 2026-11-20 — Thực hiện V0.3A
+- Quyết định: ưu tiên cảnh isometric CSS nhẹ và chuyển đổi về chế độ cổ điển; chưa đưa Phaser vào runtime nhằm giữ GitHub Pages nhẹ, tránh phá gameplay hiện có.
+- Phạm vi V0.3A: hình thoi isometric, trang trí cảnh quan, hỗ trợ mobile, giữ nguyên logic và save V0.2.1.
+- Tiêu chí nghiệm thu: typecheck, lint, tests, static Pages build/deploy PASS; chọn ô chính xác, không mất save; iOS Safari/Android Chrome cần kiểm thử tay.
+- Tồn đọng tiếp nối V0.3B: hỗ trợ pan/zoom bằng cảm ứng và chuột, nâng cấp asset đồ họa nguyên bản, thử nghiệm thao tác trên thiết bị thật; V0.3C: tối ưu hiệu năng, accessibility và kiểm thử hồi quy.
+- V0.4–V0.6 tiếp tục theo Baseline 002; không thay đổi hoặc ghi đè mục cũ.

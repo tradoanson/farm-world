@@ -40,3 +40,10 @@ Tên tệp chuẩn: `futurebaseline.md`. Đây là nhật ký kế hoạch **app
 - Chống thao tác ngoài ý muốn: khi kéo/chụm không gieo hoặc thu hoạch.
 - Gate bắt buộc: CI + Pages PASS; kiểm thử thực tế iOS Safari và Android Chrome là công việc nghiệm thu còn mở.
 - Tiếp nối V0.3C: thử nhiều kích cỡ màn hình, kiểm tra chạm/drag/zoom, tối ưu accessibility, hiệu năng, cải thiện đồ họa tự tạo và regression tests. V0.4–V0.6 tiếp tục theo Baseline 002.
+
+## Baseline 006 — 2026-11-20 — Hoàn thiện mã nguồn V0.3C
+- Mục tiêu: hoàn thiện thao tác mobile, khả năng truy cập, hiệu năng và hồi quy sau V0.3B mà không thay đổi gameplay hoặc dữ liệu lưu.
+- Đã triển khai: chặn click ngoài ý muốn sau gesture; hàm camera có unit test; responsive màn hình nhỏ; cải thiện xuất backup và focus.
+- Nghiệm thu bắt buộc: CI typecheck/lint/tests/build và Pages PASS; thử thực tế iOS Safari/Android Chrome (pan, pinch, tap, reload, export/import) vẫn phải xác nhận bằng thiết bị thật.
+- Giới hạn: isometric vẫn là CSS/emoji prototype, chưa phải sprite asset chất lượng thương mại; chưa có tài khoản hoặc cloud.
+- Mục tiêu kế tiếp V0.4: kho vật phẩm, kinh nghiệm/cấp độ, nhiệm vụ, cân bằng kinh tế và save migration an toàn. Giữ Baseline 001–005, không ghi đè.

@@ -250,3 +250,5 @@ button{font:inherit}
 .market-form{display:grid;gap:9px}.market-form label{display:grid;gap:4px;font-size:13px}.market-form input,.market-form select{min-width:0;width:100%;padding:9px;border:1px solid #91b48a;border-radius:8px;background:#fff}
 .market-list{display:grid;gap:8px;max-height:360px;overflow:auto}
 .market-list>div{display:grid;gap:5px;padding:10px;background:white;border:1px solid #d4e6c8;border-radius:9px;font-size:13px;overflow-wrap:anywhere}
+
+.market-filters{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}.market-filters button[aria-pressed="true"]{background:#3d7841;color:white;border-color:#285a31}

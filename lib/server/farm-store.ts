@@ -1,4 +1,3 @@
-import 'server-only';
 import postgres from 'postgres';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { isValidFarm } from '../farm-demo';

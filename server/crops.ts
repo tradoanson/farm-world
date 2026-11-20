@@ -1,0 +1,1 @@
+export function isCropReady(plantedAtMs:number,growSeconds:number,serverNowMs:number){return Number.isFinite(plantedAtMs)&&Number.isFinite(growSeconds)&&growSeconds>0&&serverNowMs>=plantedAtMs+growSeconds*1000;}

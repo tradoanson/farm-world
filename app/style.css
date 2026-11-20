@@ -108,3 +108,25 @@ button{font:inherit}
 .scene-iso .farm-decor{z-index:0}
 .scene-iso .tile{touch-action:none}
 @media(max-width:800px){.camera-hint{font-size:11px}.camera-toolbar{gap:6px}}
+
+/* V0.3C: accessibility and small-screen regression fixes */
+.farm-scene{contain:layout paint}
+.scene-iso .camera-layer{will-change:transform}
+.scene-classic .camera-layer{will-change:auto}
+.farm-scene .tile:focus-visible{outline:3px solid #163f83;outline-offset:2px;z-index:5}
+.farm-scene .tile.ready{filter:saturate(1.2)}
+.camera-toolbar button:not(:disabled):active{background:#e0f4e1}
+.camera-toolbar output{color:#234a2f}
+@media(max-width:430px){
+ .farm-scene.scene-iso{padding:13% 8%;border-width:2px}
+ .farm-scene.scene-iso .tiles{transform:rotate(45deg) scale(.66)}
+ .farm-scene.scene-iso .tile>span{font-size:clamp(12px,3.7vw,18px)}
+ .farm-scene.scene-iso .countdown{font-size:7px}
+ .farm-decor{font-size:17px}
+}
+@media(max-width:340px){
+ .camera-toolbar button{min-width:42px;padding:7px}
+ .farm-scene.scene-iso{padding:12% 7%}
+ .farm-scene.scene-iso .tiles{transform:rotate(45deg) scale(.62)}
+}
+@media(prefers-reduced-motion:reduce){.scene-iso .camera-layer{will-change:auto}}

@@ -268,3 +268,10 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .scene-iso .camera-layer{will-change:transform}
 .scene-iso .tile{transition:background-color .15s ease,box-shadow .15s ease}
 @media(prefers-reduced-motion:reduce){.scene-iso .tile{transition:none}}
+
+/* V3.1 online husbandry */
+.husbandry-v31{margin:1rem 0;padding:1rem;border:1px solid #9dbb8e;border-radius:14px;background:rgba(233,247,224,.9);color:#244329}
+.husbandry-pen{display:flex;flex-direction:column;gap:.35rem;margin:.7rem 0;padding:.8rem;border:1px solid #bbd0b2;border-radius:10px;background:#fff}
+.husbandry-actions{display:flex;gap:.45rem;flex-wrap:wrap}
+.husbandry-actions button,.husbandry-v31>button{padding:.5rem .8rem;border-radius:8px;border:1px solid #83a878;cursor:pointer}
+.husbandry-actions button:disabled,.husbandry-v31>button:disabled{opacity:.45;cursor:not-allowed}

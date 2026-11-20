@@ -46,3 +46,10 @@ Lịch sử phiên bản được ghi nối tiếp, không xóa hoặc viết l�
 - Tối ưu CSS cho màn hình nhỏ, focus bàn phím, reduced-motion và bố cục camera; tăng độ tin cậy xuất file sao lưu trên mobile.
 - Giữ nguyên save key và cấu trúc save version 1; không thêm backend, không reset dữ liệu.
 - Gate: CI/Pages theo commit cuối V0.3C; Safari iOS/Chrome Android thực tế vẫn cần xác nhận thủ công.
+
+## V0.4 — 2026-11-20
+- Bổ sung kho 5 loại nông sản, bán nông sản lấy vàng (3× giá hạt), kinh nghiệm/cấp độ, 3 nhiệm vụ có thưởng một lần.
+- Thu hoạch từ V0.4 đưa sản phẩm vào kho thay vì trả vàng ngay; giữ nguyên dữ liệu V1 và số vàng đã kiếm ở các phiên bản trước.
+- Lưu progression version 2 trong key riêng `farm-world-v04-progression`, giữ nguyên save key nông trại V1; xuất/nhập JSON V2 gồm farm và progression, vẫn chấp nhận JSON V1.
+- Kiểm thử migration, bán hàng, chống nhận thưởng lặp, XP; không có backend hoặc multiplayer.
+- Gate CI/Pages và kiểm thử mobile cần xác minh trước khi chốt nghiệm thu.

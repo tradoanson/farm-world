@@ -285,3 +285,35 @@ button{font:inherit}
  .farm-scene.scene-iso .tile>span{font-size:clamp(15px,4.5vw,24px)}
  .farm-scene.scene-iso .farm-decor{font-size:28px}
 }
+
+/* Rendered original SVG game assets, not emoji-only or a CSS recolor.
+   Scene URL and ripe crop URL are assigned inline for static-export basePath safety. */
+.farm-scene.scene-iso{
+ background-size:cover;
+ background-position:center top;
+ background-repeat:no-repeat;
+ border-color:#f6e2aa;
+}
+.farm-scene.scene-iso::before{content:none}
+.farm-scene.scene-iso .farm-decor{display:none}
+.farm-scene.scene-iso .tiles{
+ margin-top:90px;
+ background:#74a851e8;
+ border-color:#f9dda2;
+}
+.farm-scene.scene-iso .tile.illustrated.ripe>span{
+ display:block;
+ width:100%;
+ height:100%;
+ background-position:center 45%;
+ background-repeat:no-repeat;
+ background-size:contain;
+ font-size:0;
+ filter:drop-shadow(0 3px 2px #345c3d70);
+}
+.farm-scene.scene-iso .tile.illustrated.growing>span{font-size:clamp(17px,3vw,29px)}
+@media(max-width:700px){
+ .farm-scene.scene-iso{padding-top:28px}
+ .farm-scene.scene-iso .tiles{margin-top:105px}
+ .farm-scene.scene-iso .tile.illustrated.ripe>span{min-height:20px}
+}

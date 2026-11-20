@@ -43,15 +43,17 @@ export async function readOnlineSnapshot(api:SupabaseClient,ownerId:string):Prom
  const s=stateResult.data;
  if(!s||![s.coins,s.harvested,s.revision,s.xp,s.sold].every(validInt)) throw new Error('Trạng thái máy chủ không hợp lệ.');
  const plots=(plotResult.data??[]).map(p=>({index:p.plot_index,crop:p.crop,plantedAt:p.planted_at}));
- if(plots.some(p=>!validInt(p.index)||p.index>63||(p.crop!==null&&(!validInt(p.crop)||p.crop>4||typeof p.plantedAt!=='string'||!Number.isFinite(Date.parse(p.plantedAt))))||(p.crop===null&&p.plantedAt!==null))) throw new Error('Ô đất máy chủ không hợp lệ.');
+ if(new Set(plots.map(p=>p.index)).size!==plots.length||plots.some(p=>!validInt(p.index)||p.index>63||(p.crop!==null&&(!validInt(p.crop)||p.crop>4||typeof p.plantedAt!=='string'||!Number.isFinite(Date.parse(p.plantedAt))))||(p.crop===null&&p.plantedAt!==null))) throw new Error('Ô đất máy chủ không hợp lệ.');
  const inventory=[0,0,0,0,0];
  for(const row of inventoryResult.data??[]) {
   if(!validInt(row.crop)||row.crop>4||!validInt(row.quantity)) throw new Error('Kho máy chủ không hợp lệ.');
+  if(inventory[row.crop]!==0) throw new Error('Kho máy chủ trùng dữ liệu.');
   inventory[row.crop]=row.quantity;
  }
  const claimed:number[]=[];
  for(const row of questResult.data??[]) {
   if(!validInt(row.quest)||row.quest>2) throw new Error('Nhiệm vụ máy chủ không hợp lệ.');
+  if(claimed.includes(row.quest)) throw new Error('Nhiệm vụ máy chủ trùng dữ liệu.');
   claimed.push(row.quest);
  }
  return {farmId:farm.id,coins:s.coins,harvested:s.harvested,revision:s.revision,xp:s.xp,sold:s.sold,plots,inventory,claimed};

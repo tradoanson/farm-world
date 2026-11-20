@@ -25,3 +25,10 @@ Lịch sử phiên bản được ghi nối tiếp, không xóa hoặc viết l�
 - Hiển thị số phiên bản và đường dẫn CHANGELOG / futurebaseline trên giao diện.
 - Không thay đổi quy tắc kinh tế, dữ liệu lưu hoặc backend.
 - Nghiệm thu CI/Pages: xem GitHub Actions của commit V0.2.1.
+
+## V0.3A — 2026-11-20
+- Thêm cảnh nông trại isometric CSS (các ô đất dạng hình thoi, cảnh quan trang trí nguyên bản bằng emoji/CSS), chuyển đổi Isometric/Cổ điển.
+- Giữ nguyên logic gieo trồng, thu hoạch, đếm ngược, sao lưu và khóa lưu dữ liệu version 1; không thay đổi database.
+- Responsive cho điện thoại, có chế độ cổ điển dự phòng để thao tác chính xác.
+- Giới hạn: đây là bản isometric CSS đầu tiên, chưa phải scene Phaser/sprite chuyên nghiệp; chưa hỗ trợ kéo/zoom bản đồ. Kiểm thử thiết bị thật còn là gate thủ công.
+- CI/Deploy: kiểm tra GitHub Actions tại commit V0.3A.

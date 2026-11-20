@@ -36,7 +36,7 @@ create policy "blocker removes blocks" on public.farm_blocks for delete to authe
 
 -- Mutations are RPC-only: identity is derived from auth.uid(), never from caller-provided sender.
 create or replace function public.farm_friend_request(p_receiver uuid)
-returns uuid language plpgsql security definer set search_path = '' as $
+returns uuid language plpgsql security definer set search_path = '' as $$
 declare v_sender uuid := auth.uid(); v_id uuid;
 begin
  if v_sender is null or p_receiver is null or v_sender = p_receiver then raise exception 'Invalid friend request'; end if;
@@ -55,12 +55,12 @@ begin
  returning id into v_id;
  if v_id is null then raise exception 'Request already exists'; end if;
  return v_id;
-end $;
+end $$;
 revoke all on function public.farm_friend_request(uuid) from public,anon;
 grant execute on function public.farm_friend_request(uuid) to authenticated;
 
 create or replace function public.farm_friend_respond(p_request uuid,p_accept boolean)
-returns text language plpgsql security definer set search_path = '' as $
+returns text language plpgsql security definer set search_path = '' as $$
 declare v_user uuid:=auth.uid(); v_sender uuid; v_receiver uuid; v_status text;
 begin
  if v_user is null or p_request is null or p_accept is null then raise exception 'Invalid friend response'; end if;
@@ -74,7 +74,7 @@ begin
  update public.farm_friend_requests set status=case when p_accept then 'accepted' else 'declined' end,updated_at=now()
  where id=p_request;
  return case when p_accept then 'accepted' else 'declined' end;
-end $;
+end $$;
 revoke all on function public.farm_friend_respond(uuid,boolean) from public,anon;
 grant execute on function public.farm_friend_respond(uuid,boolean) to authenticated;
 commit;

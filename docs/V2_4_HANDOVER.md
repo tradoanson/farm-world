@@ -1,6 +1,12 @@
 # Farm World V2.4 — Handover and acceptance gate
 
-Status: **CODE CANDIDATE — NOT DEPLOYED / NOT ACCEPTED**.
+Status: **POSTGRESQL INTEGRATION PASS (2/2) — SUPABASE STAGING / RELEASE STILL PENDING**.
+
+GitHub Actions V2.4 PostgreSQL Integration PASS on commit `5fe2a4d8`:
+- https://github.com/tradoanson/farm-world/actions/runs/44703235676
+- https://github.com/tradoanson/farm-world/actions/runs/44703226016
+
+These tests run against disposable PostgreSQL 16 with simulated Supabase `auth.uid()` and roles. They are meaningful SQL/RLS integration tests, **not** a full Supabase hosted staging acceptance or browser end-to-end test.
 
 ## Delivered source
 - `db/migrations/0004_v24_social_staging.sql`: friend requests, accepted/declined transitions, blocks, RLS and restricted RPCs.
@@ -9,8 +15,8 @@ Status: **CODE CANDIDATE — NOT DEPLOYED / NOT ACCEPTED**.
 - `tests/farm-social.test.ts`, `tests/farm-v2-release-safety.test.ts`: client validation and SQL static checks.
 
 ## Release acceptance (all required)
-1. Apply 0004 then 0007 to a disposable staging Supabase project; verify SQL compiles and RPC grants.
-2. Test with authenticated users A, B and C plus anon. B must have a public profile; A requests B; B accepts or declines. A cannot accept B's request. Repeated or conflicting transitions must fail.
+1. **PASS in disposable PostgreSQL 16**: apply 0004 then 0007 and verify SQL compiles and RPC grants. **Still required:** hosted Supabase staging parity.
+2. **PASS in PostgreSQL integration fixture** for key RPC and permission scenarios. **Still required:** hosted Supabase browser/session testing with authenticated users A, B and C plus anon. B must have a public profile; A requests B; B accepts or declines. A cannot accept B's request. Repeated or conflicting transitions must fail.
 3. A cannot request itself; hidden profiles cannot be requested or visited; either direction of block prevents requests and visits. Anonymous requests and visits fail.
 4. A cannot SELECT another user's requests, INSERT/UPDATE/DELETE requests directly, or read private inventory/plots through the visit RPC.
 5. Test concurrent duplicate requests, retries, logout/login and browser refresh. Verify no duplicate accepted friendship or leaked profile.

@@ -125,5 +125,5 @@ begin
  return true;
 end $$;
 revoke all on function public.farm_market_cancel(uuid,uuid) from public,anon;
-grant execute on function public.farm_market_cancel(uuid) to authenticated;
+grant execute on function public.farm_market_cancel(uuid,uuid) to authenticated;
 commit;

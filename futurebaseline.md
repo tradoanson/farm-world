@@ -33,3 +33,10 @@ Tên tệp chuẩn: `futurebaseline.md`. Đây là nhật ký kế hoạch **app
 - Tiêu chí nghiệm thu: typecheck, lint, tests, static Pages build/deploy PASS; chọn ô chính xác, không mất save; iOS Safari/Android Chrome cần kiểm thử tay.
 - Tồn đọng tiếp nối V0.3B: hỗ trợ pan/zoom bằng cảm ứng và chuột, nâng cấp asset đồ họa nguyên bản, thử nghiệm thao tác trên thiết bị thật; V0.3C: tối ưu hiệu năng, accessibility và kiểm thử hồi quy.
 - V0.4–V0.6 tiếp tục theo Baseline 002; không thay đổi hoặc ghi đè mục cũ.
+
+## Baseline 005 — 2026-11-20 — Triển khai V0.3B
+- Thực hiện camera pan/zoom ở lớp giao diện, không sửa luật nông trại hay định dạng save; giữ lựa chọn hiển thị Cổ điển.
+- Điều khiển: một pointer kéo; hai pointer pinch; Ctrl + wheel; nút zoom và reset. Giới hạn zoom 0.65–2.0.
+- Chống thao tác ngoài ý muốn: khi kéo/chụm không gieo hoặc thu hoạch.
+- Gate bắt buộc: CI + Pages PASS; kiểm thử thực tế iOS Safari và Android Chrome là công việc nghiệm thu còn mở.
+- Tiếp nối V0.3C: thử nhiều kích cỡ màn hình, kiểm tra chạm/drag/zoom, tối ưu accessibility, hiệu năng, cải thiện đồ họa tự tạo và regression tests. V0.4–V0.6 tiếp tục theo Baseline 002.

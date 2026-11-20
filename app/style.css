@@ -173,3 +173,6 @@ button{font:inherit}
 .economy-crops button span{font-size:12px}.economy-crops button small{margin:0;font-size:11px}
 .economy-crops button:focus-visible{outline:3px solid #245d9a;outline-offset:2px}
 @media(max-width:800px){.economy-crops{grid-template-columns:repeat(2,minmax(0,1fr))}.economy-crops button{min-width:0}}
+
+/* V1.4 upgrade cards */
+.buildings{display:grid;gap:9px}.buildings>div{padding:12px;background:#f1f8ed;border:1px solid #a2c8a1;border-radius:12px}.buildings p{font-size:12px;line-height:1.5;margin:6px 0}.buildings button{min-height:44px;padding:8px 12px;border:0;border-radius:9px;background:#327e49;color:white;font-weight:700;cursor:pointer}.buildings button:disabled{opacity:.5;cursor:not-allowed}.buildings button:focus-visible{outline:3px solid #245d9a;outline-offset:2px}

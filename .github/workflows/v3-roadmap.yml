@@ -1,0 +1,29 @@
+name: Farm World V3 Roadmap Gate
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'docs/V3_ROADMAP.md'
+      - 'docs/V3_RELEASE_EVIDENCE.md'
+      - '.github/workflows/v3-roadmap.yml'
+permissions:
+  contents: read
+jobs:
+  roadmap-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate V3 roadmap and evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s docs/V3_ROADMAP.md
+          test -s docs/V3_RELEASE_EVIDENCE.md
+          for version in V3.0 V3.1 V3.2 V3.3 V3.4 V3.5 V3.6 V3.7 V3.8 V3.9; do
+            grep -Fq "$version" docs/V3_ROADMAP.md
+          done
+          for gate in "two-account" "backup" "security" "idempotent" "mobile"; do
+            grep -iq "$gate" docs/V3_ROADMAP.md
+          done
+          grep -Fq 'NOT RELEASED' docs/V3_RELEASE_EVIDENCE.md
+          echo "Roadmap contract PASS. This does not certify implementation or release readiness."

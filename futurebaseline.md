@@ -66,3 +66,9 @@ Tên tệp chuẩn: `futurebaseline.md`. Đây là nhật ký kế hoạch **app
 - Không tuyên bố có multiplayer hoặc đồng bộ thật. Không reset DB hoặc thay đổi save offline.
 - Gate online: identity provider, staging DB, backend host, giao dịch kinh tế server-authoritative, idempotency, test cô lập 2 tài khoản, backup/rollback.
 - CI/Pages chỉ xác minh demo offline. Tiếp tục append-only.
+
+## Baseline 010 — 2026-11-20 — V0.7 Supabase opt-in
+- Tích hợp Supabase email Auth có điều kiện, RLS nông trại riêng chỉ đọc; chưa có Supabase project, chưa chạy DB migration, chưa xác nhận hai tài khoản thật.
+- Không cho browser ghi nông trại, vàng hoặc XP. Không tự động đồng bộ hoặc ghi đè save offline V1/progression V2.
+- Gate bắt buộc: CI/Pages PASS, cấu hình staging an toàn, kiểm thử hai tài khoản cô lập, OTP/redirect/logout, iOS/Android, rồi mới được tuyên bố online ready.
+- V0.8: triển khai server-authoritative actions, idempotency, giao dịch, đồng bộ và rollback trước khi mở quyền ghi.

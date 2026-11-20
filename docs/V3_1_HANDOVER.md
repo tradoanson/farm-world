@@ -1,20 +1,20 @@
-# Farm World V3.1 — Husbandry handover and production gates
+# V3.1 Husbandry — live deployment handover
 
-**Status: FOUNDATION IMPLEMENTED, LIVE HUSBANDRY NOT RELEASED.**
+## Delivered
+- Three species: chicken (egg), cow (milk), sheep (wool), one pen per species, initial capacity 2, expandable via existing barn level (max 6 chicken / 4 cow or sheep).
+- Authenticated `farm_animal_action(request_id,action,animal_type,quantity)` RPC installed on existing production Supabase, with farm-owner authorization, per-farm advisory transaction lock, row lock, atomic coin/item updates, UUID idempotency journal, server-clock production and one collection per feed cycle.
+- Buying 1 animal costs 20/75/50 coins respectively. Feeding costs 2 coins per feed unit per animal (chicken 1, cow 3, sheep 2); feeding starts a 600/1800/2400-second cycle. Products remain in separate animal inventory, not crop inventory.
+- Additive tables `farm_animal_pens`, `farm_animal_inventory`, `farm_animal_commands` installed; RLS enabled, authenticated read of owned pens/inventory, direct client writes revoked, anon RPC execute revoked.
+- Browser UI displays server-backed animal pens, buy/feed/collect, products and retry with the same stored request ID after uncertain failures.
+- Existing farm crops, marketplace, quests and account data not intentionally migrated or reset.
 
-## Implemented
-- Pure TypeScript husbandry state validator and server-time projection (`lib/v3-husbandry.ts`).
-- Chicken/egg, cow/milk, sheep/wool definitions inherited from V3.0 contracts.
-- Tests for growth timing, feed requirement, barn capacity, future timestamps, invalid stock, duplicate pens, no repeated ready display.
-- No client-side coin/item mutations. No production database changes.
+## Verification and limits
+- Production schema migration succeeded; read-only catalog confirmed `farm_animal_action` SECURITY DEFINER, fixed search_path, `anon_execute=false`, `authenticated_execute=true`.
+- CI/Pages evidence must be recorded after merge; cannot call these PASS beforehand.
+- **UNRESOLVED:** real authenticated two-account wrong-owner and concurrency tests, network failure/replay tests, mobile Safari/Chrome smoke, backup restore drill. No synthetic transactions were run on real player accounts.
+- Products are stored but cannot yet be sold or used in crafting; this is beyond the V3.1 husbandry core, expected in later production versions.
+- `feed_stock` remains reserved for a future item-based feed economy; V3.1 uses server-side coin-based feeding.
+- Migration history lives in Supabase; draft PR #11 is not the canonical deployed RPC migration. Production schema should be exported and reviewed for reproducible disaster recovery.
 
-## Still required before V3.1 functional release
-1. **Isolated Supabase project** with a verified baseline clone and restore point; never use the live database for destructive tests.
-2. Design additive `farm_animal_pens`, `farm_animal_inventory`, `farm_animal_commands` (or equivalent) with farm ownership, capacity and inventory constraints, RLS, restricted grants and migration rollback/forward-fix plan.
-3. Implement authenticated RPC for purchase/feed/collect with `auth.uid()` ownership, consistent lock order, server time, atomic inventory/coin operations, request UUID idempotency and replay-safe results.
-4. Run isolated two-user tests for wrong owner, feed without resources, double collect, concurrent collect, offline retry and full warehouse. Verify no negative feed/coins and no duplicated products.
-5. Implement online read API and game UI only after RPC contracts are verified; do not fabricate local livestock progress as persisted game data.
-6. Verify restore, CI, mobile Safari/Chrome and production deployment. Document exact evidence in `docs/V3_RELEASE_EVIDENCE.md`.
-
-## Deployment policy
-Pure domain library and tests can merge after CI PASS; this does **not** enable livestock on the live website. Economic/DB/RPC changes require isolated verification before deployment. Do not label V3.1 Stable or report it playable until all gates pass.
+## Release decision
+V3.1 functional path deployed subject to CI/Pages; **do not label Stable** until live user smoke, security concurrency tests and restore evidence are verified. No isolated environment was created at the user's direction.

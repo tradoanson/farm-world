@@ -20,6 +20,13 @@ describe('V2.2–V2.9 migration release safety checks',()=>{
   expect(source).toContain('coins>=v_total');
   expect(source).toContain('grant execute on function public.farm_market_buy(uuid,uuid) to authenticated');
  });
+ it('season activation snapshots baseline and rejects client access',()=>{
+  const source=sql('0006_v27_seasons_staging.sql');
+  expect(source).toContain('farm_season_activate');
+  expect(source).toContain('baseline_harvests=(select coalesce(sum(harvested),0)');
+  expect(source).toContain("auth.uid() is not null");
+  expect(source).toContain('revoke all on function public.farm_season_activate(uuid) from public,anon,authenticated');
+ });
  it('social visit never returns private farm state or inventory',()=>{
   const source=sql('0007_v24_public_visits_staging.sql');
   expect(source).toContain('p.visible=true');

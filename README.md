@@ -1,40 +1,32 @@
-# Farm World V0.1A
+# Farm World V0.2 — Offline Demo
 
-Next.js prototype of a farming webgame. This is NOT the production multiplayer game.
+Play: https://tradoanson.github.io/farm-world/
 
-## Run locally
+## Features
+- 8×8 farm, five crop types, coins, time-based growing and harvesting.
+- Automatic browser localStorage persistence using the existing V0.1B save key (existing progress is preserved).
+- Plant available plots and harvest all ready crops in one action.
+- Export/import a JSON backup with validation and overwrite confirmation.
+- Reset with confirmation. Responsive mobile layout.
 
-Requires Node.js 22 or newer.
+## Limits
+This is an offline single-browser prototype, **not** a multi-account online game. Browser storage can be cleared; export a backup. The device clock controls crop readiness and is not tamper-resistant. No database, authentication, server-side economy, multiplayer synchronization or real-money transactions are active. Do not treat browser saves as secure authoritative data.
+
+## Developer commands
+Node.js 22+:
 
 ```bash
 npm install
-npm run dev
+npm run typecheck
+npm run lint
+npm test
+npm run build
 ```
 
-Open http://localhost:3000. Run `npm run typecheck`, `npm run lint`, `npm test`, `npm run build` before deployment.
+GitHub Actions runs CI and a separate static GitHub Pages deployment. Pages workflow temporarily excludes `app/api` **in the build runner only** and sets `FARM_WORLD_STATIC_EXPORT=true`. API source files remain in the repository for future backend work.
 
-## Current functionality
-- Responsive farming UI with an 8x8 demonstration grid
-- Plant, wait, harvest, prototype coins and seed selection
-- `/api/health` health endpoint
-- Drizzle schema draft for users, farms, crop catalog, farm tiles, inventory and action idempotency
-- CI checks for GitHub
-
-## Not implemented yet (V0.1B)
-- User authentication and persistent sessions
-- PostgreSQL connection and migrations
-- Server-authoritative game actions and anti-cheat
-- Farm isolation, durable save, backups, production monitoring
-- Phaser isometric scene (the prototype uses a CSS grid)
-
-The prototype keeps all gameplay state in React memory and **loses progress on reload**. Never use it as a live multiplayer service.
-
-## Deploy
-1. Create a new empty GitHub repository `farm-world` (private recommended).
-2. Upload the contents of this project to its root, including `.github/workflows/ci.yml`.
-3. Import the repository into Vercel; framework should detect Next.js.
-4. Deploy the preview. `/api/health` should return status `ok`.
-5. Do not connect production PostgreSQL until migrations and access controls are implemented and tested.
+## Next stage: V0.3
+Design an isometric farm scene without changing save semantics. Multiplayer accounts require a separate backend with authorization, farm isolation, server-authoritative actions, transactions, idempotency and database migrations. GitHub Pages alone cannot host that backend.
 
 ## Safety
-No credentials are included. Production DB reset/seed is prohibited. PR review and passing CI are required before release.
+Never commit secrets or production DB credentials. No live database is connected and no destructive database operations are performed by the demo.

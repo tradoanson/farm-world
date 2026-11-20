@@ -16,7 +16,9 @@ revoke all on public.farm_seasons from anon,authenticated;
 grant select on public.farm_seasons to authenticated;
 create policy "read active seasons" on public.farm_seasons for select to authenticated
  using (enabled and starts_at<=now() and ends_at>now());
--- Record baseline_harvests at season activation from authoritative farm_state.\n-- This aggregate is an approximate season delta, not an event-sourced per-harvest ledger.\n-- Harvest totals are read from authoritative farm_state. No user-editable progress fields.
+-- Record baseline_harvests at season activation from authoritative farm_state.
+-- This aggregate is an approximate season delta, not an event-sourced per-harvest ledger.
+-- Harvest totals are read from authoritative farm_state. No user-editable progress fields.
 create or replace function public.farm_season_progress()
 returns table(season_id uuid,title text,ends_at timestamptz,target_harvests bigint,total_harvests bigint,participants bigint)
 language sql stable security definer set search_path='' as $$

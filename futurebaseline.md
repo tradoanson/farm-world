@@ -47,3 +47,9 @@ Tên tệp chuẩn: `futurebaseline.md`. Đây là nhật ký kế hoạch **app
 - Nghiệm thu bắt buộc: CI typecheck/lint/tests/build và Pages PASS; thử thực tế iOS Safari/Android Chrome (pan, pinch, tap, reload, export/import) vẫn phải xác nhận bằng thiết bị thật.
 - Giới hạn: isometric vẫn là CSS/emoji prototype, chưa phải sprite asset chất lượng thương mại; chưa có tài khoản hoặc cloud.
 - Mục tiêu kế tiếp V0.4: kho vật phẩm, kinh nghiệm/cấp độ, nhiệm vụ, cân bằng kinh tế và save migration an toàn. Giữ Baseline 001–005, không ghi đè.
+
+## Baseline 007 — 2026-11-20 — Triển khai V0.4 offline economy
+- Thêm kho nông sản, XP/cấp độ, nhiệm vụ một lần và bán sản phẩm; không thay đổi dữ liệu V1 nông trại, bổ sung progression version 2 ở key riêng.
+- Chính sách tương thích: giữ vàng, ô đất, tiến độ cũ; JSON backup V2 chứa cả farm/progression và nhập được JSON V1. Không reset DB hay đụng hệ thống online.
+- Kiểm thử: migration, giá bán, chống nhận thưởng lặp, CI typecheck/lint/tests/build, GitHub Pages và iOS Safari/Android Chrome thực tế.
+- Quyết định tiếp theo V0.5: thiết kế đăng nhập, cô lập nông trại theo tài khoản và quyền truy cập; GitHub Pages chỉ demo offline, không giả lập bảo mật backend.

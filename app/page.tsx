@@ -1,44 +1,23 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { CROPS, SAVE_KEY, freshFarm, harvest, harvestAll, isValidFarm, plant, plantAvailable, remainingSeconds, timeLabel, type FarmSave } from '../lib/farm-demo';
 
-const SAVE_KEY = 'farm-world-v01b-save';
-const crops = [
-  { name: 'Lúa mì', emoji: '🌾', seconds: 120, cost: 1 },
-  { name: 'Ngô', emoji: '🌽', seconds: 300, cost: 3 },
-  { name: 'Cà rốt', emoji: '🥕', seconds: 600, cost: 5 },
-  { name: 'Cà chua', emoji: '🍅', seconds: 900, cost: 7 },
-  { name: 'Dâu tây', emoji: '🍓', seconds: 1200, cost: 10 },
-] as const;
-type Tile = { crop: number; planted: number } | null;
-type Save = { version: 1; tiles: Tile[]; coins: number; harvested: number };
-const initial = (): Save => ({ version: 1, tiles: Array(64).fill(null), coins: 100, harvested: 0 });
-function validSave(value: unknown): value is Save {
-  if (!value || typeof value !== 'object') return false;
-  const v = value as Partial<Save>;
-  return v.version === 1 && Number.isSafeInteger(v.coins) && (v.coins ?? -1) >= 0 && Number.isSafeInteger(v.harvested) && (v.harvested ?? -1) >= 0 && Array.isArray(v.tiles) && v.tiles.length === 64 && v.tiles.every(t => t === null || (typeof t === 'object' && Number.isInteger(t.crop) && t.crop >= 0 && t.crop < crops.length && Number.isFinite(t.planted) && t.planted > 0));
-}
-function formatRemaining(seconds: number) {
-  const m = Math.floor(seconds / 60);
-  return `${m}:${String(seconds % 60).padStart(2, '0')}`;
-}
 export default function Home() {
-  const [save, setSave] = useState<Save>(initial);
+  const [farm, setFarm] = useState<FarmSave>(freshFarm);
   const [loaded, setLoaded] = useState(false);
   const [selected, setSelected] = useState(0);
   const [now, setNow] = useState(0);
-  const [message, setMessage] = useState('Chọn hạt giống rồi nhấn vào ô đất trống.');
-
+  const [notice, setNotice] = useState('Chọn hạt giống và gieo trên ô đất trống.');
+  const fileInput = useRef<HTMLInputElement>(null);
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(SAVE_KEY);
-      if (raw) {
-        const parsed: unknown = JSON.parse(raw);
-        if (validSave(parsed)) setSave(parsed);
-        else setMessage('Dữ liệu lưu không hợp lệ, đã bắt đầu nông trại mới.');
+      const saved = localStorage.getItem(SAVE_KEY);
+      if (saved) {
+        const data: unknown = JSON.parse(saved);
+        if (isValidFarm(data)) setFarm(data);
+        else setNotice('Dữ liệu cũ không hợp lệ; bắt đầu nông trại mới.');
       }
-    } catch {
-      setMessage('Không thể đọc dữ liệu đã lưu. Trò chơi bắt đầu từ đầu.');
-    }
+    } catch { setNotice('Không thể đọc dữ liệu đã lưu.'); }
     setLoaded(true);
     setNow(Date.now());
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
@@ -46,39 +25,69 @@ export default function Home() {
   }, []);
   useEffect(() => {
     if (!loaded) return;
-    try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); }
-    catch { /* Storage may be disabled; gameplay remains available for this session. */ }
-  }, [save, loaded]);
-
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(farm)); }
+    catch { setNotice('Trình duyệt không cho phép lưu. Hãy xuất bản sao dữ liệu.'); }
+  }, [farm, loaded]);
+  const ready = farm.tiles.filter(tile => tile && remainingSeconds(tile, now) === 0).length;
+  const growing = farm.tiles.filter(tile => tile && remainingSeconds(tile, now) > 0).length;
+  const empty = farm.tiles.length - ready - growing;
   function clickTile(index: number) {
     if (!loaded) return;
-    const t = save.tiles[index];
-    const timestamp = Date.now();
-    if (!t) {
-      const crop = crops[selected];
-      if (save.coins < crop.cost) { setMessage('Không đủ vàng để mua hạt giống.'); return; }
-      setSave(prev => ({ ...prev, coins: prev.coins - crop.cost, tiles: prev.tiles.map((tile, i) => i === index ? { crop: selected, planted: timestamp } : tile) }));
-      setMessage(`Đã gieo ${crop.name}. Chờ cây trưởng thành để thu hoạch!`);
-      return;
-    }
-    const crop = crops[t.crop];
-    const remaining = Math.max(0, Math.ceil((t.planted + crop.seconds * 1000 - timestamp) / 1000));
-    if (remaining > 0) { setMessage(`${crop.name} còn ${formatRemaining(remaining)} để thu hoạch.`); return; }
-    setSave(prev => ({ ...prev, coins: prev.coins + crop.cost * 3, harvested: prev.harvested + 1, tiles: prev.tiles.map((tile, i) => i === index ? null : tile) }));
-    setMessage(`Thu hoạch ${crop.name}: +${crop.cost * 3} vàng!`);
+    const tile = farm.tiles[index];
+    const time = Date.now();
+    if (!tile) {
+      const next = plant(farm, index, selected, time);
+      if (next === farm) { setNotice('Không đủ vàng để gieo hạt giống này.'); return; }
+      setFarm(next);
+      setNotice(`Đã gieo ${CROPS[selected].name}.`);
+    } else if (remainingSeconds(tile, time) === 0) {
+      setFarm(harvest(farm, index, time));
+      setNotice(`Thu hoạch ${CROPS[tile.crop].name}: +${CROPS[tile.crop].cost * 3} vàng.`);
+    } else setNotice(`${CROPS[tile.crop].name} còn ${timeLabel(remainingSeconds(tile, time))}.`);
+  }
+  function harvestReady() {
+    if (!ready) return;
+    const next = harvestAll(farm, Date.now());
+    setNotice(`Đã thu hoạch ${next.harvested - farm.harvested} ô.`);
+    setFarm(next);
+  }
+  function plantEmpty() {
+    const next = plantAvailable(farm, selected, Date.now());
+    setNotice(next === farm ? 'Không có ô trống hoặc không đủ vàng.' : `Đã gieo ${CROPS[selected].name} trên ${next.tiles.filter(Boolean).length - farm.tiles.filter(Boolean).length} ô.`);
+    setFarm(next);
+  }
+  function exportSave() {
+    const blob = new Blob([JSON.stringify(farm, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = 'farm-world-backup.json';
+    anchor.click();
+    URL.revokeObjectURL(url);
+    setNotice('Đã xuất bản sao dữ liệu nông trại.');
+  }
+  async function importSave(file?: File) {
+    if (!file) return;
+    try {
+      if (file.size > 100_000) throw new Error('File quá lớn.');
+      const parsed: unknown = JSON.parse(await file.text());
+      if (!isValidFarm(parsed)) throw new Error('Dữ liệu không đúng định dạng Farm World.');
+      if (!window.confirm('Nhập dữ liệu này sẽ ghi đè nông trại hiện tại. Tiếp tục?')) return;
+      setFarm(parsed);
+      setNotice('Đã khôi phục nông trại từ file.');
+    } catch (error) { setNotice(error instanceof Error ? error.message : 'Không thể nhập file.'); }
+    finally { if (fileInput.current) fileInput.current.value = ''; }
   }
   function reset() {
     if (!window.confirm('Xóa toàn bộ tiến độ nông trại trên trình duyệt này?')) return;
-    setSave(initial());
-    setMessage('Đã tạo nông trại mới.');
+    setFarm(freshFarm());
+    setNotice('Đã tạo nông trại mới.');
   }
-  const growing = save.tiles.filter(t => t && now < t.planted + crops[t.crop].seconds * 1000).length;
-  const ready = save.tiles.filter(t => t && now >= t.planted + crops[t.crop].seconds * 1000).length;
   return <main>
-    <header><div><span className="brand">🌻 FARM WORLD</span><small>V0.1B • Nông trại offline</small></div><div className="wallet">🪙 {save.coins} vàng <span>📦 {save.harvested} lượt thu hoạch</span></div></header>
-    <section className="hero"><h1>Nông trại của bạn 🌿</h1><p>Gieo trồng, chờ cây lớn và thu hoạch để kiếm vàng.</p><p className="warning">Tiến độ tự lưu trên trình duyệt này. Chưa đồng bộ giữa thiết bị, chưa có tài khoản online hoặc cơ sở dữ liệu.</p></section>
-    <div className="layout"><aside><h2>🌱 Cửa hàng hạt giống</h2>{crops.map((crop, i) => <button key={crop.name} className={'seed ' + (selected === i ? 'active' : '')} onClick={() => setSelected(i)} aria-pressed={selected === i}><span>{crop.emoji} {crop.name}</span><small>{crop.cost} 🪙 · {crop.seconds / 60} phút</small></button>)}<p className="hint">Lợi nhuận mỗi lần thu hoạch: gấp 3 lần giá hạt giống. Cây vẫn lớn khi bạn đóng trang, theo đồng hồ thiết bị.</p><button className="refresh" onClick={() => setNow(Date.now())}>↻ Cập nhật thời gian</button><button className="reset" onClick={reset}>Xóa tiến độ / chơi lại</button></aside>
-    <section className="farm"><div className="farm-title">🏡 Khu đất khởi đầu <span>8 × 8</span></div><p className="stats">🌱 Đang lớn: {growing} &nbsp; 🌟 Có thể thu hoạch: {ready}</p><p className="status" role="status">{message}</p><div className="tiles">{save.tiles.map((t, i) => { const crop = t ? crops[t.crop] : null; const remaining = t && crop ? Math.max(0, Math.ceil((t.planted + crop.seconds * 1000 - now) / 1000)) : 0; const ripe = !!t && remaining === 0; return <button key={i} onClick={() => clickTile(i)} disabled={!loaded} className={'tile ' + (ripe ? 'ready' : '')} aria-label={`Ô đất ${i + 1}: ${!t ? 'trống' : ripe ? crop?.name + ' đã chín' : crop?.name + ' còn ' + formatRemaining(remaining)}`} title={!t ? 'Gieo hạt' : ripe ? 'Thu hoạch' : formatRemaining(remaining)}><span>{!t ? '·' : ripe ? crop?.emoji : '🌱'}</span>{t && !ripe && <small className="countdown">{formatRemaining(remaining)}</small>}</button>; })}</div><div className="footnote">🟫 Đất trống &nbsp; 🌱 Đang lớn &nbsp; 🌟 Có thể thu hoạch</div></section></div>
-    <footer>Farm World V0.1B • Demo chạy trên GitHub Pages • Không dùng tài sản của trò chơi khác</footer>
+    <header><div><span className="brand">🌻 FARM WORLD</span><small>V0.2 • Nông trại offline</small></div><div className="wallet">🪙 {farm.coins} vàng <span>📦 {farm.harvested} lượt thu hoạch</span></div></header>
+    <section className="hero"><h1>Nông trại của bạn 🌿</h1><p>Gieo trồng, chờ cây lớn, thu hoạch và phát triển nông trại.</p><p className="warning">Tự lưu trên trình duyệt này; có thể xuất/nhập file để chuyển thiết bị. Chưa có tài khoản online, đồng bộ cloud hoặc chống gian lận thời gian.</p></section>
+    <div className="layout"><aside><h2>🌱 Cửa hàng hạt giống</h2>{CROPS.map((crop, index) => <button key={crop.name} className={'seed ' + (selected === index ? 'active' : '')} aria-pressed={selected === index} onClick={() => setSelected(index)}><span>{crop.emoji} {crop.name}</span><small>{crop.cost} 🪙 · {crop.seconds / 60} phút</small></button>)}<p className="hint">Mỗi vụ thu hoạch nhận 3 lần giá hạt giống. Cây tiếp tục lớn khi đóng trang theo đồng hồ thiết bị.</p><h2>🧰 Công cụ</h2><button className="refresh" disabled={!loaded || !empty} onClick={plantEmpty}>🌱 Gieo trên các ô trống</button><button className="refresh" disabled={!loaded || !ready} onClick={harvestReady}>🧺 Thu hoạch tất cả ({ready})</button><button className="secondary-action" disabled={!loaded} onClick={exportSave}>⬇ Xuất dữ liệu (.json)</button><button className="secondary-action" disabled={!loaded} onClick={() => fileInput.current?.click()}>⬆ Nhập dữ liệu</button><input ref={fileInput} className="hidden-input" type="file" accept=".json,application/json" aria-label="Chọn bản sao Farm World" onChange={event => { void importSave(event.target.files?.[0]); }} /><button className="reset" disabled={!loaded} onClick={reset}>Xóa tiến độ / chơi lại</button></aside>
+    <section className="farm"><div className="farm-title">🏡 Khu đất khởi đầu <span>8 × 8</span></div><p className="stats">🟫 Trống: {empty} &nbsp; 🌱 Đang lớn: {growing} &nbsp; 🌟 Đã chín: {ready}</p><p className="status" role="status">{notice}</p><div className="tiles">{farm.tiles.map((tile, index) => { const crop = tile ? CROPS[tile.crop] : null; const seconds = tile ? remainingSeconds(tile, now) : 0; const ripe = !!tile && seconds === 0; return <button key={index} disabled={!loaded} onClick={() => clickTile(index)} className={'tile ' + (ripe ? 'ready' : '')} title={!tile ? 'Gieo hạt' : ripe ? 'Thu hoạch' : timeLabel(seconds)} aria-label={`Ô đất ${index + 1}: ${!tile ? 'trống' : ripe ? crop?.name + ' đã chín' : crop?.name + ' còn ' + timeLabel(seconds)}`}><span>{!tile ? '·' : ripe ? crop?.emoji : '🌱'}</span>{tile && !ripe && <small className="countdown">{timeLabel(seconds)}</small>}</button>; })}</div><div className="footnote">🟫 Đất trống &nbsp; 🌱 Đang lớn &nbsp; 🌟 Có thể thu hoạch</div></section></div>
+    <footer>Farm World V0.2 • GitHub Pages • Dữ liệu demo nằm trên thiết bị của bạn</footer>
   </main>;
 }

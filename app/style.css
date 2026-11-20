@@ -178,3 +178,46 @@ button{font:inherit}
 .buildings{display:grid;gap:9px}.buildings>div{padding:12px;background:#f1f8ed;border:1px solid #a2c8a1;border-radius:12px}.buildings p{font-size:12px;line-height:1.5;margin:6px 0}.buildings button{min-height:44px;padding:8px 12px;border:0;border-radius:9px;background:#327e49;color:white;font-weight:700;cursor:pointer}.buildings button:disabled{opacity:.5;cursor:not-allowed}.buildings button:focus-visible{outline:3px solid #245d9a;outline-offset:2px}
 
 /* V2.0 community */.community{padding:12px;border:1px solid #9dbda1;border-radius:12px;background:#f5fbf3}.community>label{display:block;font-size:13px;font-weight:700;margin:8px 0}.community>input{width:100%;min-height:44px;border:1px solid #7caa84;border-radius:9px;padding:8px}.community .community-check{display:flex;align-items:center;gap:9px;font-weight:500}.community-check input{width:20px;height:20px}.community .account-actions button{min-height:44px;border:1px solid #458357;border-radius:9px;background:#e3f4e3;color:#174d29;padding:9px}.community-list{display:grid;gap:5px;margin-top:10px}.community-list>div{display:flex;flex-wrap:wrap;justify-content:space-between;gap:5px;padding:8px;border:1px solid #d6e6d2;border-radius:8px;background:white;font-size:12px}
+
+/* Experimental 2.5D visual-only skin. No gameplay state, tile index or RPC changes.
+   The 8x8 DOM order stays intact; rotate the board and counter-rotate crop sprites. */
+.farm-scene.scene-iso{
+ background:
+  radial-gradient(ellipse at 15% 16%,#fff5c9 0 4%,transparent 4.5%),
+  radial-gradient(ellipse at 86% 30%,#b2db82 0 5%,transparent 5.5%),
+  repeating-linear-gradient(110deg,transparent 0 34px,#ffffff15 35px 38px,transparent 39px 85px),
+  linear-gradient(165deg,#c9eb9a 0%,#8dc875 47%,#64a96b 100%);
+ border:7px solid #f6e6b0;border-radius:26px;
+ box-shadow:inset 0 0 0 3px #79a95e,inset 0 12px 36px #467b4540,0 12px 26px #244a2c24;
+ overflow:hidden;
+}
+.farm-scene.scene-iso::before{
+ content:'';position:absolute;inset:8px;pointer-events:none;
+ border:3px dashed #f5e7a0a8;border-radius:19px;
+}
+.farm-scene.scene-iso .tiles{gap:5px;filter:drop-shadow(0 12px 5px #2e583b35)}
+.farm-scene.scene-iso .tile{
+ position:relative;
+ background:repeating-linear-gradient(135deg,#a66b3c 0 7px,#b67c46 8px 15px,#9d6437 16px 21px);
+ border:2px solid #e6b66c;
+ border-radius:7px;
+ box-shadow:inset 2px 2px #f2c785,inset -5px -5px #7a4a2a,4px 5px 0 #527b3d;
+ transition:filter .12s ease,box-shadow .12s ease;
+}
+.farm-scene.scene-iso .tile.ready{
+ background:repeating-linear-gradient(135deg,#d4a652 0 9px,#e9c16c 10px 19px);
+ border-color:#fff0a8;
+ box-shadow:inset 2px 2px #fff1aa,inset -5px -5px #ac7a37,4px 5px 0 #527b3d,0 0 12px #ffed79a8;
+}
+.farm-scene.scene-iso .tile:not(:disabled):hover{filter:brightness(1.13)}
+.farm-scene.scene-iso .tile:focus-visible{outline:4px solid #1659b8;outline-offset:3px;z-index:3}
+.farm-scene.scene-iso .tile>span{filter:drop-shadow(1px 3px 1px #3c512e88);font-size:clamp(20px,3.5vw,36px)}
+.farm-scene.scene-iso .farm-decor{font-size:clamp(26px,4vw,46px);filter:drop-shadow(2px 5px 2px #2e603c66)}
+.farm-scene.scene-iso .tile.locked{filter:grayscale(.7);opacity:.55}
+@media(max-width:800px){
+ .farm-scene.scene-iso{border-width:4px;border-radius:18px}
+ .farm-scene.scene-iso .tiles{gap:3px}
+ .farm-scene.scene-iso .tile{border-width:1px;border-radius:3px;box-shadow:inset -2px -2px #7a4a2a,2px 3px 0 #527b3d}
+ .farm-scene.scene-iso .tile>span{font-size:clamp(13px,4.2vw,23px)}
+}
+@media(prefers-reduced-motion:reduce){.farm-scene.scene-iso .tile{transition:none}}

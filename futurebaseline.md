@@ -78,3 +78,8 @@ Tên tệp chuẩn: `futurebaseline.md`. Đây là nhật ký kế hoạch **app
 - Preserve V1 offline save and V2 progression; no automatic cloud import or production migration.
 - Gates still open: Supabase staging activation, real DB integration, two-account isolation, concurrent requests, CI/Pages, mobile smoke tests.
 - V0.9: online gameplay adapter, authoritative inventory/XP/quests, migration consent, recovery and abuse controls.
+
+## Baseline 012 — 2026-11-20 — V0.9 online snapshot staging
+- Adapter RPC typed và snapshot chỉ đọc; UI giữ online/offline tách biệt, không ghi đè dữ liệu người chơi.
+- Gate còn mở: Supabase staging, 2-user E2E, SQL concurrency/idempotency, parity inventory/XP/quests, persisted command queue, consent migration, rollback, CI/Pages.
+- Chỉ kích hoạt lệnh online sau khi xử lý khác biệt kinh tế giữa V0.8 RPC và gameplay offline V0.4.

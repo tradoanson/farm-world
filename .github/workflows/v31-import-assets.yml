@@ -1,0 +1,59 @@
+name: Import Farm World V3.1 PNG assets
+on:
+  workflow_dispatch:
+    inputs:
+      archive_url:
+        description: 'Direct HTTPS URL to the 127-PNG ZIP (must be downloadable without login)'
+        required: true
+        type: string
+permissions:
+  contents: write
+concurrency:
+  group: farm-world-v31-assets-import
+  cancel-in-progress: false
+jobs:
+  import-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/v31-asset-quality-20261121
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install Pillow==11.3.0
+      - name: Download candidate archive
+        env:
+          ASSET_URL: ${{ inputs.archive_url }}
+        run: |
+          python - <<'PY'
+          import os, urllib.parse, urllib.request
+          url = os.environ["ASSET_URL"]
+          parsed = urllib.parse.urlparse(url)
+          if parsed.scheme != "https" or not parsed.hostname:
+              raise SystemExit("Expected HTTPS URL")
+          request = urllib.request.Request(url, headers={"User-Agent": "FarmWorldAssetImporter/1.0"})
+          with urllib.request.urlopen(request, timeout=90) as response:
+              payload = response.read(30_000_001)
+          if len(payload) > 30_000_000 or not payload.startswith(b"PK\\x03\\x04"):
+              raise SystemExit("Downloaded file is not a ZIP or is too large; check sharing permissions")
+          open("/tmp/farm-v31-assets.zip", "wb").write(payload)
+          PY
+      - name: Validate all 127 PNG files and import atomically
+        run: python scripts/import_v31_asset_zip.py /tmp/farm-v31-assets.zip
+      - name: Verify changed assets
+        run: |
+          test "$(find public/assets/v3.1 -type f -name '*.png' | wc -l)" -eq 127
+          git status --short
+      - name: Commit to audit branch (never main)
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/assets/v3.1
+          if git diff --cached --quiet; then
+            echo 'No asset changes to commit'
+          else
+            git commit -m 'assets(v3.1): import 127 validated PNG files'
+            git push origin HEAD:audit/v31-asset-quality-20261121
+          fi

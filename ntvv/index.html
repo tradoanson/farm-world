@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Gieo trồng, chăn nuôi, chế biến và giao đơn tại Nông Trại Vui Vẻ.">
+  <title>Nông Trại Vui Vẻ</title>
+  <link rel="icon" type="image/png" href="scene-art/farmhouse.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="game-viewport">
+    <header id="top-bar">
+      <button class="brand" type="button" data-scene-target="farm" aria-controls="scene-farm">
+        <span class="brand-mark" aria-hidden="true">🌿</span>
+        <span><strong>Nông Trại Vui Vẻ</strong><small>Farm World V3.1</small></span>
+      </button>
+      <button class="profile-card" type="button" data-scene-target="levels" aria-controls="scene-levels" aria-label="Xem tiến độ cấp độ">
+        <span class="profile-avatar" aria-hidden="true">⭐</span>
+        <span class="profile-text">
+          <strong id="hud-player-name">Nông dân vui vẻ</strong>
+          <span class="profile-progress"><span id="hud-player-level">Cấp 1</span><span class="hud-xp" id="hud-xp-text"></span></span>
+          <progress class="hud-xp-bar" id="hud-xp-bar" max="100" value="0" aria-label="EXP cấp hiện tại"></progress>
+        </span>
+      </button>
+      <div class="currencies-group" aria-label="Tài nguyên">
+        <div class="currency-pill">
+          <span aria-hidden="true">🪙</span><span class="currency-label">Vàng</span>
+          <strong id="hud-gold-val">300</strong>
+          <button class="btn-plus" id="btn-plus-gold" type="button" data-scene-target="orders" aria-controls="scene-orders" aria-label="Đến bảng đơn để kiếm vàng" title="Đến bảng đơn">☷</button>
+        </div>
+        <div class="currency-pill">
+          <span aria-hidden="true">💎</span><span class="currency-label">Kim cương</span>
+          <strong id="hud-gem-val">4</strong>
+          <button class="btn-plus" id="btn-plus-gem" type="button" data-scene-target="quests" aria-controls="scene-quests" aria-label="Đến nhiệm vụ để kiếm kim cương" title="Đến nhiệm vụ">☷</button>
+        </div>
+        <div class="currency-pill">
+          <span aria-hidden="true">⚡</span><span class="currency-label">Thể lực</span>
+          <strong id="hud-energy-val">100/100</strong>
+          <button class="btn-plus" id="btn-plus-energy" type="button" aria-label="Xem hồi thể lực" title="Xem hồi thể lực">?</button>
+        </div>
+      </div>
+      <div class="header-shortcuts" aria-label="Lối tắt">
+        <button type="button" data-scene-target="shop" aria-controls="scene-shop"><span aria-hidden="true">🏪</span>Cửa hàng</button>
+        <button type="button" data-scene-target="orders" aria-controls="scene-orders"><span aria-hidden="true">🧺</span>Chợ</button>
+        <button type="button" data-scene-target="workshop" aria-controls="scene-workshop"><span aria-hidden="true">⚙️</span>Sản xuất</button>
+        <button type="button" data-scene-target="warehouse" aria-controls="scene-warehouse"><span aria-hidden="true">📦</span>Kho hàng</button>
+      </div>
+    </header>
+
+    <main class="farm-layout" aria-label="Nông trại">
+      <nav id="farm-navigation" aria-label="Khu vực trò chơi">
+        <button type="button" data-scene-target="farm" aria-controls="scene-farm"><span aria-hidden="true">🌱</span>Trồng trọt</button>
+        <button type="button" data-scene-target="animals" aria-controls="scene-animals"><span aria-hidden="true">🐔</span>Chăn nuôi</button>
+        <button type="button" data-scene-target="workshop" aria-controls="scene-workshop"><span aria-hidden="true">⚙️</span>Sản xuất</button>
+        <button type="button" data-scene-target="orders" aria-controls="scene-orders"><span aria-hidden="true">🧺</span>Đơn hàng</button>
+        <button type="button" data-scene-target="quests" aria-controls="scene-quests"><span aria-hidden="true">📋</span>Nhiệm vụ<span class="quest-indicator" id="quest-indicator" hidden aria-label="Nhiệm vụ có thưởng"></span></button>
+        <button type="button" data-scene-target="events" aria-controls="scene-events"><span aria-hidden="true">🎡</span>Sự kiện</button>
+        <button type="button" data-scene-target="more" aria-controls="scene-more"><span aria-hidden="true">☰</span>Thêm</button>
+      </nav>
+      <div id="scene-viewport">
+        <section id="scene-farm" class="game-scene" data-scene="farm" aria-labelledby="heading-farm">
+          <header class="scene-heading">
+            <div><h1 id="heading-farm" tabindex="-1">Trồng trọt</h1></div>
+            <button class="secondary-button progress-link" type="button" data-scene-target="quests" aria-controls="scene-quests"><span>📋</span> <span id="farm-progress-link">Xem hành trình</span></button>
+            
+          </header>
+          <div class="garden-layout">
+            <div id="game-stage" class="farm-scene" aria-label="Nhà, ruộng và bến câu cá">
+              <div id="day-night-overlay" aria-hidden="true"></div>
+              <section id="crop-section" class="field-zone" aria-label="Ruộng cây"><div id="crops-field" aria-label="Chín ô đất trồng"></div></section>
+              <button id="pier-fishing-hotspot" class="map-hotspot dock-hotspot" type="button">🎣 Bến câu</button>
+              <button id="farm-dog-pet" class="map-hotspot dog-hotspot" type="button">🐕 Chó Vàng</button>
+              <canvas id="fx-canvas" aria-hidden="true"></canvas>
+            </div>
+            <div class="garden-controls farm-card">
+              <div class="section-heading"><h2>Dụng cụ</h2><span class="status-pill" id="ready-crops"></span></div>
+              <div class="crop-toolbar" aria-label="Dụng cụ trồng trọt">
+                <button class="tool-dock-btn active" type="button" data-tool="sickle" aria-pressed="true">🌾 Liềm</button>
+                <button class="tool-dock-btn" type="button" data-tool="water" aria-pressed="false">💧 Tưới</button>
+                <button class="tool-dock-btn" type="button" data-tool="fertilizer" aria-pressed="false">✨ Bón phân</button>
+              </div>
+              <p>Chạm ô trống để gieo. Chạm hoặc vuốt qua ô chín để gặt.</p>
+              <div class="farm-work">
+                <strong id="farm-ready-work"></strong>
+                <span id="farm-next-work"></span>
+              </div>
+              <button class="secondary-button seed-link" type="button" data-scene-target="shop" aria-controls="scene-shop">Mua hạt giống</button>
+            </div>
+          </div>
+        </section>
+        <section id="scene-animals" class="game-scene" data-scene="animals" aria-labelledby="heading-animals" hidden>
+          <header class="scene-heading">
+            <div><h1 id="heading-animals" tabindex="-1">Chăn nuôi</h1></div>
+            
+          </header>
+          <div class="barn-yard">
+            <div class="barn-yard-header">
+              <p class="status-pill" id="ready-pens"></p>
+              <button class="tool-dock-btn" type="button" data-tool="fertilizer" data-toggle-tool aria-pressed="false">✨ Bón phân</button>
+            </div>
+            <div class="pen-grid">
+              <article class="pen-card" id="bubble-chicken">
+                <div class="pen-art">
+                  <img class="barn-illustration" src="scene-art/coop.png" alt="" draggable="false">
+                  <img class="animal-illustration" src="scene-art/hen.png" alt="" draggable="false">
+                </div>
+                <div class="pen-details">
+                  <h2 class="pen-name">Chuồng gà</h2>
+                  <p class="pen-status"><span aria-hidden="true">🥚</span> <strong class="bubble-title"></strong><span class="bubble-countdown"></span></p>
+                  <div class="bubble-progress-bar" aria-hidden="true"><div class="bubble-progress-fill"></div></div>
+                  <button class="pen-action" type="button" data-pen="chicken">Xem chuồng</button>
+                </div>
+              </article>
+              <article class="pen-card" id="bubble-cow">
+                <div class="pen-art">
+                  <img class="barn-illustration" src="scene-art/cow-barn.png" alt="" draggable="false">
+                  <img class="animal-illustration" src="scene-art/cow.png" alt="" draggable="false">
+                </div>
+                <div class="pen-details">
+                  <h2 class="pen-name">Chuồng bò</h2>
+                  <p class="pen-status"><span aria-hidden="true">🥛</span> <strong class="bubble-title"></strong><span class="bubble-countdown"></span></p>
+                  <div class="bubble-progress-bar" aria-hidden="true"><div class="bubble-progress-fill"></div></div>
+                  <button class="pen-action" type="button" data-pen="cow">Xem chuồng</button>
+                </div>
+              </article>
+              <article class="pen-card" id="bubble-sheep">
+                <div class="pen-art">
+                  <img class="barn-illustration" src="scene-art/sheep-barn.png" alt="" draggable="false">
+                  <img class="animal-illustration" src="scene-art/sheep.png" alt="" draggable="false">
+                </div>
+                <div class="pen-details">
+                  <h2 class="pen-name">Chuồng cừu</h2>
+                  <p class="pen-status"><span aria-hidden="true">🧶</span> <strong class="bubble-title"></strong><span class="bubble-countdown"></span></p>
+                  <div class="bubble-progress-bar" aria-hidden="true"><div class="bubble-progress-fill"></div></div>
+                  <button class="pen-action" type="button" data-pen="sheep">Xem chuồng</button>
+                </div>
+              </article>
+            </div>
+          </div>
+    <section id="right-sidebar" class="farm-card animal-stock" aria-labelledby="animal-title">
+      <div class="section-heading"><h2 id="animal-title">Kho chăn nuôi</h2></div>
+        <div class="panel-actions">
+          <button class="secondary-button" type="button" data-open="modal-buy-animals" id="btn-buy-animal">🛒 Mua vật nuôi</button>
+          <button type="button" id="btn-feed-animal">Cho ăn tất cả</button>
+          <button type="button" id="btn-harvest-animal">Thu hoạch tất cả</button>
+        </div>
+        <div class="stock-summary" aria-label="Kho chăn nuôi">
+          <span><span>🥚 Trứng</span><strong id="stock-egg-val"></strong></span>
+          <span><span>🥛 Sữa</span><strong id="stock-milk-val"></strong></span>
+          <span><span>🧶 Lông cừu</span><strong id="stock-wool-val"></strong></span>
+        </div>
+        <div class="feed-row">
+          <span>🌾 Thức ăn <strong id="stock-feed-val"></strong></span>
+          <button class="btn-plus" id="btn-feed-plus" type="button" aria-label="Chế biến thức ăn">+</button>
+        </div>
+    </section>
+        </section>
+        <section id="scene-workshop" class="game-scene feature-scene" data-scene="workshop" aria-labelledby="heading-workshop" hidden>
+          <header class="scene-heading">
+            <div><h1 id="heading-workshop" tabindex="-1">Xưởng sản xuất</h1><p>Chế biến nông sản để bán hoặc giao đơn.</p></div>
+            <img class="scene-illustration" src="scene-art/workshop.png" alt="" draggable="false">
+          </header>
+          <div class="feature-content">
+            <section class="production-panel" aria-labelledby="production-title">
+              <div class="gameplay-heading"><h2 id="production-title">Hàng chờ xưởng</h2><span class="status-pill" id="workshop-slots"></span></div>
+              <div id="production-queue"></div>
+            </section>
+            <div class="card-grid" id="workshop-recipes-grid"></div>
+          </div>
+        </section>
+        <section id="scene-orders" class="game-scene feature-scene" data-scene="orders" aria-labelledby="heading-orders" hidden>
+          <header class="scene-heading">
+            <div><h1 id="heading-orders" tabindex="-1">Chợ nông sản</h1><p>Giao cho người dân thị trấn những đơn đã đủ hàng.</p></div>
+            <img class="scene-illustration" src="scene-art/market.png" alt="" draggable="false">
+          </header>
+          <div class="feature-content">
+            <p class="barn-status" id="ready-orders"></p>
+            <div class="orders-list" id="orders-list-wrap"></div>
+          </div>
+        </section>
+        <section id="scene-quests" class="game-scene feature-scene" data-scene="quests" aria-labelledby="heading-quests" hidden>
+          <header class="scene-heading">
+            <div><h1 id="heading-quests" tabindex="-1">Nhiệm vụ</h1><p>Theo dõi tiến độ và nhận thưởng khi hoàn thành.</p></div>
+            <img class="scene-illustration" src="scene-art/farmhouse.png" alt="" draggable="false">
+          </header>
+          <div class="feature-content">
+            <section class="quest-section" aria-labelledby="chapter-title">
+              <div class="gameplay-heading"><h2 id="chapter-title"></h2><span class="status-pill" id="chapter-count"></span></div>
+              <p class="quest-summary" id="chapter-summary"></p>
+              <div class="orders-list" id="chapter-quests"></div>
+            </section>
+            <section class="quest-section" aria-labelledby="daily-title">
+              <div class="gameplay-heading"><h2 id="daily-title">Việc mỗi ngày</h2><span class="status-pill" id="daily-date"></span></div>
+              <p class="quest-summary">Làm mới lúc 0 giờ theo giờ thiết bị. Nhận thưởng trước khi sang ngày.</p>
+              <div class="orders-list" id="daily-quests"></div>
+            </section>
+            <section id="legacy-quests" class="quest-section" aria-labelledby="legacy-title" hidden>
+              <h2 id="legacy-title">Nhiệm vụ từ bản trước</h2>
+              <div class="orders-list" id="quests-list-wrap"></div>
+            </section>
+          </div>
+        </section>
+        <section id="scene-warehouse" class="game-scene feature-scene" data-scene="warehouse" aria-labelledby="heading-warehouse" hidden>
+          <header class="scene-heading">
+            <div><h1 id="heading-warehouse" tabindex="-1">Kho hàng</h1><p>Xem tồn kho và bán nông sản, thành phẩm hoặc cá.</p></div>
+            <img class="scene-illustration" src="scene-art/warehouse.png" alt="" draggable="false">
+          </header>
+          <div class="feature-content">
+            <div class="card-grid" id="warehouse-items-grid"></div>
+          </div>
+        </section>
+        <section id="scene-shop" class="game-scene feature-scene" data-scene="shop" aria-labelledby="heading-shop" hidden>
+          <header class="scene-heading">
+            <div><h1 id="heading-shop" tabindex="-1">Cửa hàng</h1><p>Mua hạt giống cho vụ tiếp theo.</p></div>
+            <img class="scene-illustration" src="scene-art/shop.png" alt="" draggable="false">
+          </header>
+          <div class="feature-content">
+            <div class="card-grid" id="shop-items-grid"></div>
+          </div>
+        </section>
+        <section id="scene-events" class="game-scene" data-scene="events" aria-labelledby="heading-events" hidden>
+          <header class="scene-heading">
+            <div><h1 id="heading-events" tabindex="-1">Khu sự kiện</h1><p>Vòng quay may mắn</p></div>
+            
+          </header>
+          <div class="feature-content">
+            <div class="wheel-wrapper">
+              <div class="wheel-pointer">▼</div>
+              <canvas id="wheel-canvas" width="320" height="320"></canvas>
+              <button class="btn-spin-wheel" id="btn-spin-wheel">QUAY NGAY!</button>
+            </div>
+            <p id="wheel-result" role="status"></p>
+            <p style="font-size: 13px; color: #6f5436;">
+              Lượt đầu miễn phí. Mỗi lượt sau tốn 10 kim cương.
+            </p>
+          </div>
+        </section>
+        <section id="scene-levels" class="game-scene feature-scene" data-scene="levels" aria-labelledby="heading-levels" hidden>
+          <header class="scene-heading">
+            <div><h1 id="heading-levels" tabindex="-1">Cấp độ nông trại</h1><p id="level-next-unlock"></p></div>
+            <img class="scene-illustration" src="scene-art/farmhouse.png" alt="" draggable="false">
+          </header>
+          <div class="feature-content level-content">
+            <section class="level-overview" aria-labelledby="level-current">
+              <div class="level-medal" aria-hidden="true">★</div>
+              <div class="level-meter">
+                <h2 id="level-current"></h2>
+                <progress id="scene-xp-bar" max="100" value="0" aria-label="EXP đến cấp tiếp theo"></progress>
+                <p id="level-xp-detail"></p>
+              </div>
+            </section>
+            <h2 class="level-road-title">Mốc mở khóa</h2>
+            <ol class="level-unlock-list" id="level-unlocks"></ol>
+          </div>
+        </section>
+        <section id="scene-more" class="game-scene" data-scene="more" aria-labelledby="heading-more" hidden>
+          <header class="scene-heading">
+            <div><h1 id="heading-more" tabindex="-1">Cài đặt</h1></div>
+            <img class="scene-illustration" src="scene-art/farmhouse.png" alt="" draggable="false">
+          </header>
+          <nav class="feature-shortcuts" aria-label="Thêm khu vực">
+            <button class="secondary-button" type="button" data-scene-target="levels" aria-controls="scene-levels">⭐ Cấp độ</button>
+            <button class="secondary-button" type="button" data-scene-target="shop" aria-controls="scene-shop">🏪 Cửa hàng</button>
+            <button class="secondary-button" type="button" data-scene-target="warehouse" aria-controls="scene-warehouse">📦 Kho hàng</button>
+          </nav>
+          <div class="feature-content">
+            <div class="settings-tools">
+              <button class="secondary-button" type="button" id="btn-tool-daynight">🌅 Đổi buổi</button>
+              <button class="secondary-button" type="button" id="btn-tool-weather">🌧️ Đổi thời tiết</button>
+              <button class="secondary-button" type="button" id="btn-tool-sound" aria-pressed="true">🔊 Âm thanh</button>
+              <button class="secondary-button" type="button" id="btn-tool-music" aria-pressed="false">🎵 Nhạc nền</button>
+              <button class="secondary-button" type="button" id="btn-tool-fullscreen">⛶ Toàn màn hình</button>
+            </div>
+            <hr style="border: none; border-top: 1px solid #dca459;">
+            <button class="btn-store-action" style="background: linear-gradient(180deg, #e74c3c, #c0392b);" id="btn-reset-game">Đặt Lại Tiến Độ Ban Đầu</button>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <p class="game-toast" id="game-toast" role="status"></p>
+
+
+
+  <!-- Modal: Câu Cá Tại Bến Sông -->
+  <div class="modal-overlay" id="modal-fishing">
+    <div class="modal-card" style="max-width: 500px;">
+      <div class="modal-header" style="background: #1b4f72;">
+        <span class="modal-title">🎣 Bến Sông Câu Cá</span>
+        <button class="modal-close-btn" type="button" aria-label="Đóng">&times;</button>
+      </div>
+      <div class="modal-body" style="align-items: center; text-align: center;">
+        <div class="fishing-scene-box">
+          <div class="fishing-water-ripple"></div>
+          <div class="fishing-water-ripple" style="animation-delay: 0.7s;"></div>
+          <div class="fishing-bobber">🎣</div>
+          <div class="bite-alert-banner" id="fishing-bite-alert">💥 CÁ CẮN CÂU! GIẬT NGAY! 💥</div>
+        </div>
+        <p style="font-size: 13px; color: #5d6d7e; margin: 10px 0;">
+          Quăng cần và chú ý quan sát! Khi cá cắn câu, hãy giật cần thật nhanh để bắt cá!
+        </p>
+        <button class="btn-store-action" style="padding: 12px 24px; font-size: 16px; border-radius: 14px;" id="btn-cast-rod">
+          🎣 Quăng Cần Câu (Tốn 2 Thể Lực)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Chế biến Thức Ăn Nhanh -->
+  <div class="modal-overlay" id="modal-craft-feed">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span class="modal-title">🌾 Chế Biến Thức Ăn Gia Súc</span>
+        <button class="modal-close-btn" type="button" aria-label="Đóng">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="store-item-card" style="width: 100%;">
+          <span class="store-item-icon">🌾</span>
+          <span class="store-item-title">Xay Thức Ăn Gia Súc (x5 Bao)</span>
+          <span class="store-item-desc">Nguyên liệu: 2 Lúa mì + 1 Bắp ngô</span>
+          <button class="btn-store-action" style="margin-top: 10px;" id="btn-queue-feed" type="button">Xay 5 bao thức ăn</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Mua Vật Nuôi -->
+  <div class="modal-overlay" id="modal-buy-animals">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span class="modal-title">🛒 Mua Thêm Vật Nuôi</span>
+        <button class="modal-close-btn" type="button" aria-label="Đóng">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="card-grid" id="buy-animals-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Chọn Hạt Giống Gieo Trồng -->
+  <div class="modal-overlay" id="modal-seed-picker">
+    <div class="modal-card" style="max-width: 460px;">
+      <div class="modal-header">
+        <span class="modal-title">🌱 Chọn Cây Trồng</span>
+        <button class="modal-close-btn" type="button" aria-label="Đóng">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="seed-picker-grid">
+          <button class="seed-card" type="button" data-crop="wheat">
+            <span style="font-size: 32px;">🌾</span>
+            <span style="font-weight: 800; font-size: 13px;">Lúa mì</span>
+            <span class="seed-time"></span>
+            <span class="seed-stock"></span>
+          </button>
+          <button class="seed-card" type="button" data-crop="carrot">
+            <span style="font-size: 32px;">🥕</span>
+            <span style="font-weight: 800; font-size: 13px;">Cà rốt</span>
+            <span class="seed-time"></span>
+            <span class="seed-stock"></span>
+          </button>
+          <button class="seed-card" type="button" data-crop="corn">
+            <span style="font-size: 32px;">🌽</span>
+            <span style="font-weight: 800; font-size: 13px;">Bắp ngô</span>
+            <span class="seed-time"></span>
+            <span class="seed-stock"></span>
+          </button>
+          <button class="seed-card" type="button" data-crop="tomato">
+            <span style="font-size: 32px;">🍅</span>
+            <span style="font-weight: 800; font-size: 13px;">Cà chua</span>
+            <span class="seed-time"></span>
+            <span class="seed-stock"></span>
+          </button>
+          <button class="seed-card" type="button" data-crop="strawberry">
+            <span style="font-size: 32px;">🍓</span>
+            <span style="font-weight: 800; font-size: 13px;">Dâu tây</span>
+            <span class="seed-time"></span>
+            <span class="seed-stock"></span>
+          </button>
+        </div>
+        <button class="secondary-button" type="button" data-scene-target="shop" aria-controls="scene-shop">Mua hạt giống</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Chúc Mừng Lên Cấp -->
+  <div class="modal-overlay" id="modal-level-up">
+    <div class="modal-card level-celebration">
+      <div class="modal-header">
+        <span class="modal-title">Nông trại lên cấp</span>
+        <button class="modal-close-btn" type="button" aria-label="Đóng">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="level-celebration-mark"><span aria-hidden="true">★</span><h2>Cấp <strong id="lvlup-level-num"></strong></h2></div>
+        <p class="level-reward" id="lvlup-reward"></p>
+        <ul class="level-new-unlocks" id="lvlup-unlocks" hidden></ul>
+        <div class="level-dialog-actions">
+          <button class="secondary-button" type="button" data-scene-target="levels" aria-controls="scene-levels">Xem mốc cấp</button>
+          <button class="btn-store-action" type="button" onclick="window.farmGame.closeModal('modal-level-up')">Tiếp tục chơi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Engine Scripts -->
+  <script src="audio.js"></script>
+  <script src="game-rules.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

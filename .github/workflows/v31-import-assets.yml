@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: audit/v31-asset-quality-20261121
+          ref: main
           persist-credentials: true
       - uses: actions/setup-python@v5
         with:
@@ -46,7 +46,7 @@ jobs:
         run: |
           test "$(find public/assets/v3.1 -type f -name '*.png' | wc -l)" -eq 127
           git status --short
-      - name: Commit to audit branch (never main)
+      - name: Commit validated assets to main
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -55,5 +55,5 @@ jobs:
             echo 'No asset changes to commit'
           else
             git commit -m 'assets(v3.1): import 127 validated PNG files'
-            git push origin HEAD:audit/v31-asset-quality-20261121
+            git push origin HEAD:main
           fi

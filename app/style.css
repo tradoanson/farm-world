@@ -316,3 +316,9 @@ aside,.farm{padding:13px}
 .v31-animal-sidebar .husbandry-v31>button{min-height:44px;margin:4px 0}
 @media(max-width:1150px){.layout{grid-template-columns:minmax(195px,245px) minmax(0,1fr)}.layout>.v31-animal-sidebar{grid-column:2;grid-row:2}.layout>.farm{grid-column:2;grid-row:1}.layout>aside{grid-row:1 / span 2}}
 @media(max-width:800px){main{padding:7px}.layout{display:flex;flex-direction:column}.layout>.farm{order:0;width:100%}.layout>.v31-animal-sidebar{order:1;width:100%}.layout>aside{order:2;width:100%}header{flex-wrap:wrap}.hero{padding:10px}.farm-scene.scene-iso .tiles{padding:3px;border-width:4px}.v31-animal-sidebar .husbandry-actions{grid-template-columns:repeat(3,minmax(0,1fr))}.v31-animal-sidebar .husbandry-actions button{font-size:12px;padding:6px 3px}}
+
+/* V3.1 fixed nine-plot garden */
+.farm-scene.scene-iso .tiles,.farm-scene.scene-classic .tiles{grid-template-columns:repeat(3,minmax(0,1fr));max-width:490px;width:min(100%,490px);gap:9px}
+.farm-scene.scene-iso .tiles{margin:115px auto 25px;padding:12px;transform:none!important}
+.farm-scene.scene-iso .tile,.farm-scene.scene-classic .tile{aspect-ratio:1.25;min-height:76px;font-size:clamp(25px,3vw,42px)}
+@media(max-width:700px){.farm-scene.scene-iso .tiles{margin:85px auto 12px;gap:5px;padding:6px}.farm-scene.scene-iso .tile,.farm-scene.scene-classic .tile{min-height:55px;font-size:23px}}

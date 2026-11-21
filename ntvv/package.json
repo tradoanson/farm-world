@@ -1,7 +1,0 @@
-{
-  "name": "nong-trai-vui-ve",
-  "private": true,
-  "scripts": {
-    "test": "node --test tests/game-rules.test.cjs"
-  }
-}

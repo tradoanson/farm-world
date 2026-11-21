@@ -1,4 +1,4 @@
-name: Deploy Farm World to GitHub Pages
+name: Deploy Nong Trai Vui Ve to GitHub Pages
 
 on:
   push:
@@ -7,8 +7,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
@@ -22,26 +20,26 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install
-      - run: npm run typecheck
-      - run: npm run lint
       - run: npm test
-      - name: Build static demo without server API routes
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || 'https://nnhcxdxtbjqmwvhzunyc.supabase.co' }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_B7rbiONpKgaaBVa1NLsTDQ_qmi4y9i0' }}
+      - name: Package the browser game
         run: |
-          rm -rf app/api
-          FARM_WORLD_STATIC_EXPORT=true npm run build
-      - uses: actions/upload-pages-artifact@v3
+          mkdir -p out
+          cp index.html style.css audio.js game-rules.js game.js Hinh_anh_can_cu.jpg .nojekyll out/
+          cp -R scene-art out/
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: out
+
   deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4

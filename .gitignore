@@ -1,7 +1,13 @@
-node_modules
-.next
+# Local environment and Supabase CLI files
 .env
 .env.*
 !.env.example
-*.tsbuildinfo
-.DS_Store
+supabase/.temp/
+supabase/.branches/
+
+# Local dependencies and test output
+node_modules/
+__pycache__/
+*.log
+playwright-report/
+test-results/

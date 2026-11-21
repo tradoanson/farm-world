@@ -2,11 +2,11 @@
 
 ## Giao diện trên GitHub Pages
 
-Thư mục mã nguồn này có lối vào `index.html`, đường dẫn ảnh tương đối, mã JavaScript thuần và `.nojekyll`. Có thể chạy tại gốc repository hoặc dưới thư mục tên repository trên GitHub Pages.
+Trong repository `tradoanson/farm-world`, GitHub Pages dùng nguồn **GitHub Actions**. Workflow **Deploy Nong Trai Vui Ve to GitHub Pages** chạy khi cập nhật `main` hoặc khi được kích hoạt thủ công. Workflow chạy `npm test`, sau đó đóng gói `index.html`, mã JavaScript, CSS và ảnh để phát hành.
 
-1. Đưa nội dung thư mục này vào một repository trên GitHub.
-2. Trong **Settings → Pages**, chọn **Deploy from a branch**, rồi chọn nhánh chứa mã và thư mục **/(root)**.
-3. Mở URL Pages và kiểm tra trồng trọt, chuồng, xưởng và đơn hàng trên màn hình dọc.
+URL chơi: [Nông Trại Vui Vẻ trên GitHub Pages](https://tradoanson.github.io/farm-world/).
+
+Khi chuyển mã nguồn sang một repository độc lập, có thể chọn **Settings → Pages → Deploy from a branch**, rồi chọn nhánh chứa mã và thư mục **/(root)**.
 
 [GitHub Docs về nguồn xuất bản Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
 

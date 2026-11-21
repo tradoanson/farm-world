@@ -1,79 +1,115 @@
-# Farm World V0.6 — Offline Demo
+# NÔNG TRẠI VUI VẺ – FARM WORLD (PHIÊN BẢN V3.1 EXPANDED)
 
-Play: https://tradoanson.github.io/farm-world/
+Một tựa game mô phỏng nông trại hoàn chỉnh, sống động và giàu tính năng, chạy trên nền Web đa nền tảng (Desktop & Mobile Responsive). Cảnh trồng trọt được căn theo vị trí ruộng và cầu câu trên ảnh gốc [Hinh_anh_can_cu.jpg](Hinh_anh_can_cu.jpg). Các cảnh khác sử dụng ảnh rời trong thư mục scene-art.
 
-## Features
-- 8×8 farm, five crop types, coins, time-based growing and harvesting.
-- Automatic browser localStorage persistence using the existing V0.1B save key (existing progress is preserved).
-- Plant available plots and harvest all ready crops in one action.
-- Export/import a JSON backup with validation and overwrite confirmation.
-- Reset with confirmation. Responsive mobile layout.
+---
 
-## Limits
-This is an offline single-browser prototype, **not** a multi-account online game. Browser storage can be cleared; export a backup. The device clock controls crop readiness and is not tamper-resistant. No database, authentication, server-side economy, multiplayer synchronization or real-money transactions are active. Do not treat browser saves as secure authoritative data.
+## 🌾 CÁCH KHỞI CHẠY GAME
 
-## Developer commands
-Node.js 22+:
+### Cách 1: Chơi trực tiếp (Zero Configuration)
+* Nhấp đúp chuột trực tiếp vào file [index.html](index.html) để mở trên trình duyệt (Chrome, Edge, Safari, Cốc Cốc, Firefox).
 
-```bash
-npm install
-npm run typecheck
-npm run lint
-npm test
-npm run build
-```
+### Cách 2: Mở Web Server (Khuyên dùng để chơi trên cả điện thoại)
+* Nhấp đúp vào file [run_game.bat](run_game.bat).
+* Trình duyệt máy tính tự động mở: `http://localhost:8080`.
+* Chạy riêng trên máy tính bằng `python serve_game.py --open`.
+* **Chơi trên điện thoại**: Kết nối cùng mạng Wi-Fi với máy tính, mở trình duyệt điện thoại và gõ `http://[IP_Máy_Tính]:8080`.
 
-GitHub Actions runs CI and a separate static GitHub Pages deployment. Pages workflow temporarily excludes `app/api` **in the build runner only** and sets `FARM_WORLD_STATIC_EXPORT=true`. API source files remain in the repository for future backend work.
+---
 
-## Next stage: V0.6
-Implement real authentication, per-farm isolation and server-authoritative transactions with a suitable backend. V0.5 includes the security contract and design, not a live login. Multiplayer accounts require a separate backend with authorization, farm isolation, server-authoritative actions, transactions, idempotency and database migrations. GitHub Pages alone cannot host that backend.
+## Nhịp chơi và mã nguồn
 
-## Safety
-Never commit secrets or production DB credentials. No live database is connected and no destructive database operations are performed by the demo.
+- [Thời lượng, vòng chơi và cách giữ bản lưu cũ](docs/GAMEPLAY.md)
+- [Chuẩn bị GitHub Pages và Supabase](docs/ONLINE.md)
+- Chạy kiểm tra bằng `npm test`. Không cần cài gói phụ thuộc.
 
-## Versioning and roadmap
-- [CHANGELOG.md](CHANGELOG.md): append-only release notes for each version.
-- [futurebaseline.md](futurebaseline.md): append-only future development baseline; never replace earlier sections.
-- Mobile V0.2.1: farm shown before shop on small screens, horizontal seed selector, portrait/landscape breakpoints and larger touch controls. Real-device Safari/Chrome validation remains a manual acceptance step.
+## Chơi trên máy tính và điện thoại
 
-## V0.4 scene
-- Isometric diamond-style farm via CSS, with original emoji/CSS scenery and a Classic view toggle.
-- Both views operate on the same 64 saved plots; existing V0.1B/V0.2 data is unchanged.
-- Pan, zoom, professional sprite art and real-device touch validation remain for V0.4/V0.4.
+- Mỗi tab mở một cảnh riêng. Trồng trọt dùng phần ruộng từ ảnh gốc. Chăn nuôi dùng ảnh rời cho từng chuồng, với nút và đồng hồ đặt bên ngoài vùng ảnh.
+- Trên máy tính, chọn cảnh ở thanh trái. Trên điện thoại, dùng thanh dưới. Trên ruộng, chạm ô trống để gieo hoặc vuốt qua các ô chín khi chọn liềm.
+- Gieo một ô dùng một hạt giống. Có thể bán thành phẩm trong kho hoặc dùng chúng để giao đơn. Bảng đơn hàng đưa các đơn đủ hàng lên đầu.
+- Sản xuất và đếm ngược vẫn chạy khi chuyển cảnh. Tiến độ được lưu riêng trong từng trình duyệt và địa chỉ mở game.
 
-## V0.4 camera
-- Drag one finger or mouse pointer to pan isometric farm. Pinch with two fingers or use zoom +/- buttons; Ctrl + mouse wheel also zooms. Reset camera via the home button.
-- Zoom limited to 65–200%. Classic mode remains available. Existing saves and crop rules are unchanged.
-- Mobile browser gesture testing on physical iOS/Android devices is still required for final UX sign-off.
+## Hành trình và vòng chơi
 
-## V0.4 release
-- Added camera regression tests, safer drag/pinch click handling, improved keyboard focus and narrow-screen layout.
-- Preserve save version 1 and localStorage key. Physical iOS Safari and Android Chrome acceptance remains manual.
+- **Chương 1 — Vụ mùa đầu tiên.** Gặt, gieo và tưới để nhận hạt giống và vàng.
+- **Chương 2 — Nhịp sống trong chuồng.** Xay thức ăn, cho vật nuôi ăn và thu sản phẩm. Nhận hết thưởng của chương để mở công thức phô mai.
+- **Chương 3 — Hàng về thị trấn.** Nướng bánh, bán hàng và giao đơn. Hoàn thành chương mở công thức áo len và thêm một ô xưởng.
+- **Chương 4 — Xưởng làng phát triển.** Chế biến phô mai và áo len rồi giao đơn có thành phẩm.
+- **Việc mỗi ngày** luân phiên theo ngày trên thiết bị. Nhiệm vụ có nút đi đến đúng cảnh. Nhận thưởng trước khi sang ngày mới.
+- Xưởng trừ nguyên liệu khi xếp mẻ. Mỗi lần chạy một mẻ và hàng chờ tiếp tục tính giờ khi đóng game. Mẻ hoàn thành giữ chỗ đến khi chọn **Nhận hàng**.
+- Hồ sơ mới bắt đầu ở cấp 1. Hồ sơ cũ giữ cấp, tài nguyên, công thức và nhiệm vụ cũ, đồng thời có thể chơi hành trình mới.
 
-## V0.4 economy
-- Harvested crops enter inventory; sell stock for 3× seed price. Earn XP and levels and claim three one-time quest rewards.
-- Legacy farm data stays in the original V1 localStorage key. Progression is stored separately as V2; V2 backup exports both and imports V1 backups.
-- No online accounts or secure server-side economy yet. Physical mobile testing remains manual.
+## Cấp độ nông trại
 
-## V0.5 account foundation
-- Offline guest mode explicitly shown in UI; no mock passwords or insecure browser-based login.
-- Pure authorization contract and tests in `lib/farm-authorization.ts` and `tests/farm-authorization.test.ts`.
-- Backend architecture, database model and rollout gates: [V0.5 account architecture](docs/V0.5_ACCOUNT_ARCHITECTURE.md).
-- No user accounts or online synchronization are operational yet.
+Bấm hồ sơ trên thanh trên cùng để xem EXP đang có, số EXP còn thiếu và các mốc mở khóa. Gieo, tưới, gặt, chăm chuồng, nhận hàng ở xưởng, giao đơn và hoàn thành nhiệm vụ đều có thể cho EXP.
 
-## V0.6 backend foundation
-- Additive staging PostgreSQL schema and owner-scoped read API (not deployed to GitHub Pages).
-- No live login or cloud synchronization. Snapshot writes disabled (501) until server-authoritative economy is ready.
-- See [backend handoff](docs/V0.6_BACKEND_HANDOFF.md).
+| Cấp | Mở khóa |
+| --- | --- |
+| 2 | Chuồng gà có 4 chỗ |
+| 3 | Mua hạt cà chua |
+| 4 | Chuồng bò có 3 chỗ |
+| 5 | Mua hạt dâu tây và nâng chuồng gà lên 5 chỗ |
+| 6 | Chuồng cừu có 3 chỗ |
+| 7 | Chuồng bò có 4 chỗ |
+| 8 | Chuồng cừu có 4 chỗ và nhận thêm một ô xưởng |
+| 9 | Chuồng gà có 6 chỗ |
 
-## V0.7 account pilot
-- Optional Supabase email magic-link login, logout, and read-only own-farm lookup. Without public Supabase config the game stays offline.
-- Staging RLS migration and setup: [V0.7 handoff](docs/V0.7_HANDOFF.md). No cloud gameplay sync or authoritative writes yet.
+Ô xưởng từ cấp 8 cộng dồn với ô nhận từ chương 3, tối đa 4 ô. Hồ sơ cũ giữ cấp, EXP, ngưỡng của cấp hiện tại, hạt giống và vật nuôi đã có. Hạt giống trong kho vẫn gieo được trước mốc mở mua trong cửa hàng.
 
-## V0.8 staging backend
-- Server-authoritative SQL RPC for planting and harvesting with idempotent request IDs, transaction locking, server clock and per-account isolation.
-- No live database deployed or cloud gameplay activated. [V0.8 handoff and tests](docs/V0.8_HANDOFF.md).
 
-## V0.9 online snapshot staging
-- Optional authenticated read-only snapshot of authoritative server coins/harvests/revision and planted plots. No gameplay sync or cloud write UI.
-- Typed RPC adapter and validation tests for future activation. [V0.9 handoff](docs/V0.9_HANDOFF.md).
+Tham khảo thiết kế từ [hàng chờ xưởng](https://support.supercell.com/hay-day/en/articles/products.html), [mục tiêu theo ngày](https://support.supercell.com/hay-day/en/articles/goals-and-rewards.html) và [bảng đơn hàng của Hay Day](https://support.supercell.com/hay-day/en/articles/truck-orders-2-2.html), [chuỗi sản xuất của Township](https://playrix.helpshift.com/hc/en/3-township/faq/15993-farming-production/), [thao tác kéo trên ruộng của FarmVille 3](https://zyngasupport.helpshift.com/hc/en/91-farmville-3/section/1074-getting-started/) và [cách Stardew Valley điều chỉnh giao diện cho mobile](https://www.stardewvalley.net/press/).
+
+---
+
+## 🌟 TẬP HỢP CÁC TÍNH NĂNG MỚI ĐÃ MỞ RỘNG (EXPANDED GAMEPLAY)
+
+### 1. 🎣 Mini-Game Câu Cá Tại Cầu Tàu Bến Sông (Fishing Pier)
+* Tận dụng cây cầu gỗ và bến sông ở góc dưới bên trái:
+* Nhấp vào **"Bến Câu Cá"** trên cầu tàu để mở giao diện câu cá thời gian thực.
+* Nhấn **"Quăng Cần Câu"**: Chiếc phao câu lắc lư trên mặt nước gợn sóng.
+* Sau vài giây, chuông cảnh báo **"CÁ CẮN CÂU! GIẬT NGAY!"** xuất hiện: Người chơi cần phản xạ giật cần trong 1.8 giây để kéo cá lên bờ!
+* Các loài thủy sản phong phú:
+  * 🐟 **Cá Chép Vàng** (Bán 80 Vàng)
+  * 🐠 **Cá Rô Phi** (Bán 130 Vàng)
+  * 🐡 **Cá Hồi Đại Dương** (Bán 240 Vàng)
+  * 🦞 **Tôm Càng Xanh Hiếm** (Bán 380 Vàng)
+* Có thể bán cá tại **Kho Hàng** lấy tiền vàng dồi dào.
+
+### 2. 🎡 Vòng Quay May Mắn (Wheel of Fortune)
+* Nhấp vào biểu tượng **"May mắn"** trong thanh điều hướng hoặc mục **Thêm** trên điện thoại.
+* Vòng quay 8 ô phần thưởng rực rỡ: Vàng (500 - 1000), Kim cương (15💎), Thức ăn gia súc, Thể lực, Phân bón thần kỳ, Hạt dâu tây và Rương báu bí ẩn!
+* Hiệu ứng âm thanh tick bánh đà cơ khí, kim chỉ và pháo hoa rực rỡ khi trúng thưởng.
+* Lượt đầu tiên miễn phí cho mỗi tiến độ chơi. Các lượt sau tốn 10 kim cương.
+
+### 3. 🐕 Thú Cưng Canh Nhà (Chú Chó Vàng)
+* Chú chó vàng ngồi canh trước cửa hiên nhà nông trại.
+* Nhấp vào chú chó: Chú sủa mừng và có một lượt cơ hội tìm 50 vàng mỗi 30 phút.
+
+### 4. 🧰 Khay Công Cụ Nổi Tương Tác Nhanh (Hay Day Quick Tools Dock)
+* Nằm trong bảng dụng cụ ở cảnh Trồng trọt:
+  * 🌾 **Liềm Gặt**: Chế độ vuốt thu hoạch nhanh hàng loạt.
+  * 💧 **Bình Tưới Nước**: Nhấp vào cây đang lớn để **giảm 25% thời gian còn lại** (hiển thị giọt nước lấp lánh).
+  * ✨ **Phân Bón Thần Kỳ**: Kích thích cây trồng hoặc chuồng gia súc **chín NGAY LẬP TỨC**!
+  * 🎣 Mở **Bến câu cá** ngay trong khung cảnh nông trại.
+
+### 5. 🌅 Chu Kỳ Ngày / Đêm & Thời Tiết Mưa Nắng Động
+* Nhấp vào biểu tượng `🌅` trong **Cài đặt** để chuyển đổi thời gian:
+  * ☀️ **Ban ngày**: Ánh nắng trong trẻo, cây cối xanh tươi.
+  * 🌅 **Hoàng hôn**: Bầu trời nhuốm sắc cam hồng rực rỡ.
+  * 🌙 **Màn đêm**: Khung cảnh nông trại huyền ảo dưới ánh trăng và đom đóm lung linh.
+* Nhấp vào biểu tượng `🌧️` để bật thời tiết:
+  * Mưa phùn thay đổi khung cảnh. Bình tưới dùng để chăm từng ô cây.
+
+### 6. 🐔 Hệ thống Chăn nuôi V3.1 Cốt lõi
+* 3 chuồng trại với thời gian thực: Gà (Trứng) $\rightarrow$ Bò (Sữa) $\rightarrow$ Cừu (Lông cừu).
+* Thanh điều khiển chuyên dụng bên phải: Mua vật nuôi, Cho ăn hàng loạt, Thu hoạch toàn bộ.
+
+### 7. 🌱 Hệ thống Nông trại 9 Ô Đất Vuốt Gặt
+* Trồng 5 loại hoa màu: Lúa mì, Cà rốt, Bắp ngô, Cà chua, Dâu tây.
+* Hỗ trợ gặt lướt (Swipe-to-harvest) liên hoàn bằng chuột hoặc ngón tay cảm ứng trên điện thoại.
+
+### 8. 🏭 Xưởng Chế Biến, Kho Hàng & Đơn Hàng Thị Trấn
+* Làm thức ăn chăn nuôi từ lúa mì + bắp; nướng bánh mì; ủ phô mai; dệt áo len.
+* Bán nông phẩm tại Kho để kiếm tiền vàng.
+* Bảng đơn hàng thị trấn từ các NPC hàng xóm giúp lên cấp nhanh chóng.

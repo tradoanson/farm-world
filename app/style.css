@@ -275,3 +275,44 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .husbandry-actions{display:flex;gap:.45rem;flex-wrap:wrap}
 .husbandry-actions button,.husbandry-v31>button{padding:.5rem .8rem;border-radius:8px;border:1px solid #83a878;cursor:pointer}
 .husbandry-actions button:disabled,.husbandry-v31>button:disabled{opacity:.45;cursor:not-allowed}
+
+
+/* Farm World V3.1 — visual farm shell. Gameplay and server state remain authoritative. */
+body{background:linear-gradient(180deg,#83cfff 0,#b9e6a0 310px,#7abf60 100%);background-attachment:fixed}
+main{max-width:1700px;padding:12px}
+header{background:linear-gradient(180deg,#388ec1,#216899);border:3px solid #e8d7a1;box-shadow:0 5px 0 #2a7045,0 12px 30px #184f3a66;color:white}
+header .brand{color:#fff8cc;text-shadow:1px 2px #1e5b44;font-size:clamp(19px,2vw,30px)}
+header small{color:#e7f7ff}
+header .wallet{background:#175782a8;border-radius:15px;padding:10px 15px;color:#fff4b2}
+.hero{background:#fff8dfd9;border:2px solid #e3c57d;border-radius:18px;margin:12px 0;padding:12px 18px}
+.hero h1{font-size:clamp(22px,2.2vw,31px);margin:3px 0}
+.layout{display:grid;grid-template-columns:minmax(225px,275px) minmax(0,1fr) minmax(255px,315px);gap:12px;align-items:start}
+.layout>aside{grid-column:1;grid-row:1}
+.layout>.farm{grid-column:2;grid-row:1}
+.layout>.v31-animal-sidebar{grid-column:3;grid-row:1;min-width:0}
+aside,.farm,.v31-animal-sidebar{border:3px solid #dfc18a;box-shadow:0 7px 0 #8f9d58,0 12px 25px #23522d40;background:#fff6d9;border-radius:18px}
+aside,.farm{padding:13px}
+.farm{background:linear-gradient(#e9f6b7,#b5df86)}
+.farm-title{background:#f8e4a6;border:2px solid #bb894d;border-radius:12px;padding:10px 14px;margin:0 0 12px;color:#654323}
+.farm-scene.scene-iso{background-color:#82c567;background-position:center;background-size:cover;border:6px solid #b98445;box-shadow:inset 0 0 0 3px #fff3bd,0 9px 16px #37612f66;touch-action:pan-y;cursor:default;user-select:auto;-webkit-user-select:auto}
+.scene-iso:active{cursor:default}
+.scene-iso .camera-layer{will-change:auto;transform:none!important}
+.scene-iso .tile{touch-action:manipulation}
+.farm-scene.scene-iso .tiles{transform:none!important;position:relative;background:#8eaf57e8;border:7px solid #e6c38a;box-shadow:0 9px 0 #967044,0 14px 18px #3e602e88}
+.farm-scene.scene-iso .tile{background:repeating-linear-gradient(0deg,#9e5f35 0 8px,#bb7c43 9px 16px);border:2px solid #e7b47b;border-radius:7px}
+.farm-scene.scene-iso .tile.ready{background:#d2a85c}
+.v31-animal-sidebar{padding:10px;background:linear-gradient(180deg,#fff4d8,#f7ddb1)}
+.v31-animal-sidebar .husbandry-v31{margin:0;border:0;background:transparent;padding:6px}
+.v31-animal-sidebar .husbandry-v31 h2{background:linear-gradient(#3b9ac2,#1c6a91);border:2px solid #e4c48b;border-radius:12px;padding:12px;color:#fff;text-align:center;text-shadow:0 1px #185476;margin:0 0 10px}
+.v31-animal-sidebar .husbandry-v31>p{font-size:13px;line-height:1.5}
+.v31-animal-sidebar .husbandry-pen{border:2px solid #bc925e;background:linear-gradient(140deg,#fff8e7,#f2e4bf);box-shadow:0 3px 0 #bfa274;padding:12px;gap:7px}
+.v31-animal-sidebar .husbandry-pen strong{font-size:17px;color:#754923}
+.v31-animal-sidebar .husbandry-pen span{font-size:12px;line-height:1.5}
+.v31-animal-sidebar .husbandry-actions{display:grid;grid-template-columns:1fr;gap:7px}
+.v31-animal-sidebar .husbandry-actions button{min-height:43px;border:2px solid #fff4cc;box-shadow:0 3px 0 #886e46;background:linear-gradient(#71d950,#249f2e);color:#fff;font-weight:800;text-shadow:0 1px #1b6a26}
+.v31-animal-sidebar .husbandry-actions button:nth-child(2){background:linear-gradient(#5bc3f3,#0876ca);text-shadow:0 1px #15538b}
+.v31-animal-sidebar .husbandry-actions button:nth-child(3){background:linear-gradient(#ffcf53,#ed8a11);text-shadow:0 1px #9b570e}
+.v31-animal-sidebar .husbandry-actions button:disabled{opacity:.5;box-shadow:none}
+.v31-animal-sidebar .husbandry-v31>button{min-height:44px;margin:4px 0}
+@media(max-width:1150px){.layout{grid-template-columns:minmax(195px,245px) minmax(0,1fr)}.layout>.v31-animal-sidebar{grid-column:2;grid-row:2}.layout>.farm{grid-column:2;grid-row:1}.layout>aside{grid-row:1 / span 2}}
+@media(max-width:800px){main{padding:7px}.layout{display:flex;flex-direction:column}.layout>.farm{order:0;width:100%}.layout>.v31-animal-sidebar{order:1;width:100%}.layout>aside{order:2;width:100%}header{flex-wrap:wrap}.hero{padding:10px}.farm-scene.scene-iso .tiles{padding:3px;border-width:4px}.v31-animal-sidebar .husbandry-actions{grid-template-columns:repeat(3,minmax(0,1fr))}.v31-animal-sidebar .husbandry-actions button{font-size:12px;padding:6px 3px}}
